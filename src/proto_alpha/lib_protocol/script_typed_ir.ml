@@ -220,7 +220,7 @@ type 'a ticket = {ticketer : Contract.t; contents : 'a; amount : n num}
 
 module type TYPE_SIZE = sig
   (* A type size represents the size of its type parameter.
-     This constraint is enforced inside this module (Script_type_ir), hence there
+     This constraint is enforced inside this module (Script_typed_ir), hence there
      should be no way to construct a type size outside of it.
 
      It allows keeping type metadata and types non-private.
@@ -311,7 +311,45 @@ type end_of_stack = empty_cell * empty_cell
 
 type 'a ty_metadata = {size : 'a Type_size.t} [@@unboxed]
 
+type no = private DNo
+
+type yes = private DYes
+
+type _ dbool = No : no dbool | Yes : yes dbool
+
+type ('a, 'b, 'r) dand =
+  | NoNo : (no, no, no) dand
+  | NoYes : (no, yes, no) dand
+  | YesNo : (yes, no, no) dand
+  | YesYes : (yes, yes, yes) dand
+
+type ('a, 'b) ex_dand = Ex_dand : ('a, 'b, _) dand -> ('a, 'b) ex_dand
+[@@unboxed]
+
+let dand : type a b. a dbool -> b dbool -> (a, b) ex_dand =
+ fun a b ->
+  match (a, b) with
+  | (No, No) -> Ex_dand NoNo
+  | (No, Yes) -> Ex_dand NoYes
+  | (Yes, No) -> Ex_dand YesNo
+  | (Yes, Yes) -> Ex_dand YesYes
+
+let dbool_of_dand : type a b r. (a, b, r) dand -> r dbool = function
+  | NoNo -> No
+  | NoYes -> No
+  | YesNo -> No
+  | YesYes -> Yes
+
 type (_, _) eq = Eq : ('a, 'a) eq
+
+let merge_dand :
+    type a b c1 c2. (a, b, c1) dand -> (a, b, c2) dand -> (c1, c2) eq =
+ fun w1 w2 ->
+  match (w1, w2) with
+  | (NoNo, NoNo) -> Eq
+  | (NoYes, NoYes) -> Eq
+  | (YesNo, YesNo) -> Eq
+  | (YesYes, YesYes) -> Eq
 
 type _ comparable_ty =
   | Unit_key : unit comparable_ty

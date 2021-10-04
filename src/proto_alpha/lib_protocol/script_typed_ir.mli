@@ -186,7 +186,34 @@ end
 
 type 'a ty_metadata = {size : 'a Type_size.t} [@@unboxed]
 
+(**
+    A dependent boolean is used to represent the comparable character of a type.
+    ['b dbool] is a boolean whose value depends on its type parameter ['b].
+    [yes dbool] can only be [Yes]. [no dbool] can only be [No].
+    
+    [('a, 'b, 'r) dand] is a witness of the logical conjunction of dependent
+    booleans. ['r] is the result of ['a] and ['b].
+
+    [merge_dand] proves that the type [dand] represents a function, i.e. that
+    there is a unique ['r] such that [('a, 'b, 'r) dand] is inhabited for a
+    given ['a] and a given ['b].
+*)
+
+type no = private DNo
+
+type yes = private DYes
+
+type _ dbool = No : no dbool | Yes : yes dbool
+
+type ('a, 'b, 'r) dand =
+  | NoNo : (no, no, no) dand
+  | NoYes : (no, yes, no) dand
+  | YesNo : (yes, no, no) dand
+  | YesYes : (yes, yes, yes) dand
+
 type (_, _) eq = Eq : ('a, 'a) eq
+
+val merge_dand : ('a, 'b, 'c1) dand -> ('a, 'b, 'c2) dand -> ('c1, 'c2) eq
 
 type _ comparable_ty =
   | Unit_key : unit comparable_ty
