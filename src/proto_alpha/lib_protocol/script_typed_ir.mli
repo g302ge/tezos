@@ -1531,6 +1531,8 @@ val ty_size : 'a ty -> 'a Type_size.t
 
 val comparable_ty_size : 'a comparable_ty -> 'a Type_size.t
 
+type 'v ty_ex_c = Ty_ex_c : 'v ty -> 'v ty_ex_c [@@ocaml.unboxed]
+
 val unit_key : unit comparable_ty
 
 val never_key : never comparable_ty
@@ -1609,9 +1611,10 @@ val tx_rollup_l2_address_t : tx_rollup_l2_address ty
 
 val bool_t : bool ty
 
-val pair_t : Script.location -> 'a ty -> 'b ty -> ('a, 'b) pair ty tzresult
+val pair_t : Script.location -> 'a ty -> 'b ty -> ('a, 'b) pair ty_ex_c tzresult
 
-val union_t : Script.location -> 'a ty -> 'b ty -> ('a, 'b) union ty tzresult
+val union_t :
+  Script.location -> 'a ty -> 'b ty -> ('a, 'b) union ty_ex_c tzresult
 
 val union_bytes_bool_t : (Bytes.t, bool) union ty
 
@@ -1727,4 +1730,4 @@ type 'a value_traverse = {
 val value_traverse :
   ('t ty, 't comparable_ty) union -> 't -> 'r -> 'r value_traverse -> 'r
 
-val stack_top_ty : ('a, 'b * 's) stack_ty -> 'a ty
+val stack_top_ty : ('a, 'b * 's) stack_ty -> 'a ty_ex_c
