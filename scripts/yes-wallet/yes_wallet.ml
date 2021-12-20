@@ -51,6 +51,8 @@ let populate_wallet yes_wallet_dir alias_pkh_pk_list =
 
 let active_bakers_only_opt_name = "--active-bakers-only"
 
+let staking_share_opt_name = "--staking-share"
+
 let usage () =
   Format.printf "> create minimal in <yes_wallet_dir>@." ;
   Format.printf
@@ -64,26 +66,47 @@ let usage () =
      context in <base_dir> and store it in <yes_wallet_dir>@." ;
   Format.printf
     "    if %s is used the deactivated bakers are filtered out@."
-    active_bakers_only_opt_name
+    active_bakers_only_opt_name ;
+  Format.printf
+    "    if %s [NUM] is used, the first largest bakers that have an \
+     accumulated stake of at least [NUM] percent of the total stake are kept@."
+    staking_share_opt_name
 
 let () =
   let argv = Array.to_list Sys.argv in
+  let staking_share_opt =
+    let rec aux argv =
+      match argv with
+      | [] -> None
+      | "--staking-share" :: percentage :: _ ->
+          Some (Int64.of_string percentage)
+      | _ :: argv' -> aux argv'
+    in
+    aux argv
+  in
   let (options, argv) =
     List.partition
-      (fun arg -> String.length arg > 0 && String.get arg 0 = '-')
+      (fun arg ->
+        (String.length arg > 0 && String.get arg 0 = '-')
+        || Str.string_match (Str.regexp "[0-9]+") arg 0)
       argv
   in
   let active_bakers_only =
     List.exists (fun opt -> opt = active_bakers_only_opt_name) options
   in
-  let unknonw_options =
-    List.filter (fun opt -> opt <> active_bakers_only_opt_name) options
+  let unknown_options =
+    List.filter
+      (fun opt ->
+        opt <> active_bakers_only_opt_name
+        && opt <> staking_share_opt_name
+        && not (Str.string_match (Str.regexp "[0-9]+") opt 0))
+      options
   in
-  if unknonw_options <> [] then
+  if unknown_options <> [] then
     Format.eprintf
       "Warning: unknown options %a@."
       (Format.pp_print_list Format.pp_print_string)
-      unknonw_options ;
+      unknown_options ;
   match argv with
   | [] -> assert false
   | [_] ->
@@ -101,9 +124,13 @@ let () =
         Yes_wallet_lib.load_mainnet_bakers_public_keys
           base_dir
           active_bakers_only
+          staking_share_opt
       in
+      Format.printf
+        "Number of keys to export:   %d@."
+        (List.length alias_pkh_pk_list) ;
       if populate_wallet yes_wallet_dir alias_pkh_pk_list then
-        Format.printf "Created wallet in %s@." yes_wallet_dir
+        Format.printf "Exported path:              %s@." yes_wallet_dir
   | _ ->
       Format.eprintf "Invalid command. Usage:@." ;
       usage () ;
