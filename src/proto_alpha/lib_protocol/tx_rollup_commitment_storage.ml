@@ -387,3 +387,18 @@ let reject_commitment ctxt rollup state level =
       Tx_rollup_state_repr.record_commitment_rejection state level pred_hash
       >>?= fun state -> return (ctxt, state)
   | _ -> fail Invalid_rejection_level_argument
+
+let commitment_exists :
+    Raw_context.t ->
+    Tx_rollup_repr.t ->
+    Tx_rollup_level_repr.t ->
+    Commitment_hash.t ->
+    (Raw_context.t * bool) tzresult Lwt.t =
+ fun ctxt tx_rollup level commitment_to_check ->
+  find ctxt tx_rollup level >>=? fun (ctxt, commitment) ->
+  match commitment with
+  | None -> return (ctxt, false)
+  | Some commitment ->
+      return
+        ( ctxt,
+          Commitment_hash.(commitment.commitment_hash = commitment_to_check) )

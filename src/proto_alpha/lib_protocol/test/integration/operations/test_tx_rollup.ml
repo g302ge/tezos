@@ -1269,17 +1269,41 @@ module Rejection = struct
     >>=? fun (commitment, _batches_result) ->
     Op.tx_rollup_commit (I i) contract1 tx_rollup commitment >>=? fun op ->
     Incremental.add_operation i op >>=? fun i ->
-    return (i, contract1, tx_rollup, level, message)
+    let commitment_hash = Tx_rollup_commitment.hash commitment in
+    return (i, contract1, tx_rollup, level, message, commitment_hash)
+
+  let reject_with_valid_prerejection i contract tx_rollup level message
+      ~message_position ~proof ~previous_message_result ~commitment =
+    Op.tx_rollup_prereject
+      (I i)
+      ~source:contract
+      ~tx_rollup
+      ~level
+      ~message_position
+      ~proof
+    >>=? fun op ->
+    Incremental.add_operation i op >>=? fun i ->
+    Op.tx_rollup_reject
+      (I i)
+      contract
+      tx_rollup
+      level
+      message
+      ~message_position
+      ~proof
+      ~previous_message_result
+      ~commitment
+    >|=? fun op -> (op, i)
 
   (** [test_success] tests that rejection succeeds if the commitment is
       wrong and the proof is correct. *)
   let test_success () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, message) ->
+    >>=? fun (i, contract1, tx_rollup, level, message, commitment) ->
     let proof = true in
     let (message, _size) = Tx_rollup_message.make_batch message in
-    Op.tx_rollup_reject
-      (I i)
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1292,7 +1316,8 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation i op >>=? fun i ->
     ignore i ;
 
@@ -1302,11 +1327,11 @@ module Rejection = struct
       with an invalid proof. *)
   let test_invalid_proof () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, message) ->
+    >>=? fun (i, contract1, tx_rollup, level, message, commitment) ->
     let proof = false in
     let (message, _size) = Tx_rollup_message.make_batch message in
-    Op.tx_rollup_reject
-      (I i)
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1319,7 +1344,8 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation
       i
       op
@@ -1333,7 +1359,7 @@ module Rejection = struct
       when there is a disagreement about the previous state. *)
   let test_invalid_agreed () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, message) ->
+    >>=? fun (i, contract1, tx_rollup, level, message, commitment) ->
     let proof = false in
     let (message, _size) = Tx_rollup_message.make_batch message in
     (* This intentionally does not match  *)
@@ -1345,8 +1371,8 @@ module Rejection = struct
           Tx_rollup_withdraw.empty_withdrawals_merkle_root;
       }
     in
-    Op.tx_rollup_reject
-      (I i)
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1354,7 +1380,8 @@ module Rejection = struct
       ~message_position:0
       ~proof
       ~previous_message_result
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation
       i
       op
@@ -1391,8 +1418,9 @@ module Rejection = struct
     let level = Tx_rollup_level.root in
     let proof = true in
     let (message, _size) = Tx_rollup_message.make_batch message in
-    Op.tx_rollup_reject
-      (I i)
+    let commitment = Tx_rollup_commitment_hash.zero in
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1405,14 +1433,14 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation
       i
       op
       ~expect_failure:
         (check_proto_error
-           (Tx_rollup_errors.Cannot_reject_level
-              {provided = level; accepted_range = None}))
+           Tx_rollup_errors.Rejection_for_nonexistent_commitment)
     >>=? fun i ->
     ignore i ;
 
@@ -1422,7 +1450,7 @@ module Rejection = struct
       when the rejected commitment is already final *)
   let test_commitment_is_final () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, message) ->
+    >>=? fun (i, contract1, tx_rollup, level, message, commitment) ->
     (* Create a new commitment so that once we have finalized the fist one,
        we still have a range of valid final commitments *)
     Op.tx_rollup_submit_batch (I i) contract1 tx_rollup message >>=? fun op ->
@@ -1438,8 +1466,8 @@ module Rejection = struct
     Incremental.add_operation i op >>=? fun i ->
     let proof = true in
     let (message, _size) = Tx_rollup_message.make_batch message in
-    Op.tx_rollup_reject
-      (I i)
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1452,7 +1480,8 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation
       i
       op
@@ -1469,11 +1498,11 @@ module Rejection = struct
       when the message hash does not match the one stored in the inbox *)
   let test_wrong_message_hash () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, _message) ->
+    >>=? fun (i, contract1, tx_rollup, level, _message, commitment) ->
     let proof = true in
     let (message, _size) = Tx_rollup_message.make_batch "wrong message" in
-    Op.tx_rollup_reject
-      (I i)
+    reject_with_valid_prerejection
+      i
       contract1
       tx_rollup
       level
@@ -1486,7 +1515,8 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-    >>=? fun op ->
+      ~commitment
+    >>=? fun (op, i) ->
     Incremental.add_operation
       i
       op
@@ -1500,9 +1530,18 @@ module Rejection = struct
       when the message position does exist in the inbox *)
   let test_wrong_message_position () =
     init_with_valid_commitment ()
-    >>=? fun (i, contract1, tx_rollup, level, message) ->
+    >>=? fun (i, contract1, tx_rollup, level, message, commitment) ->
     let proof = true in
     let (message, _size) = Tx_rollup_message.make_batch message in
+    Op.tx_rollup_prereject
+      (I i)
+      ~source:contract1
+      ~tx_rollup
+      ~level
+      ~message_position:1
+      ~proof
+    >>=? fun op ->
+    Incremental.add_operation i op >>=? fun i ->
     Op.tx_rollup_reject
       (I i)
       contract1
@@ -1517,6 +1556,7 @@ module Rejection = struct
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
+      ~commitment
     >>=? fun op ->
     Incremental.add_operation
       i
@@ -1525,6 +1565,39 @@ module Rejection = struct
         (check_proto_error
            (Tx_rollup_errors.Wrong_message_position
               {level; position = 1; length = 1}))
+    >>=? fun i ->
+    ignore i ;
+
+    return ()
+
+  (** [test_missing_prerejection] tests that rejection succeeds if the commitment is
+      wrong and the proof is correct. *)
+  let test_missing_prerejection () =
+    init_with_valid_commitment ()
+    >>=? fun (i, contract, tx_rollup, level, message, commitment) ->
+    let proof = true in
+    let (message, _size) = Tx_rollup_message.make_batch message in
+    Op.tx_rollup_reject
+      (I i)
+      contract
+      tx_rollup
+      level
+      message
+      ~message_position:0
+      ~proof
+      ~previous_message_result:
+        {
+          context_hash = Tx_rollup_commitment.empty_l2_context_hash;
+          withdrawals_merkle_root =
+            Tx_rollup_withdraw.empty_withdrawals_merkle_root;
+        }
+      ~commitment
+    >>=? fun op ->
+    Incremental.add_operation
+      i
+      op
+      ~expect_failure:
+        (check_proto_error Tx_rollup_errors.Rejection_without_prerejection)
     >>=? fun i ->
     ignore i ;
 
@@ -1557,6 +1630,7 @@ module Rejection = struct
         "Test rejection with wrong message position"
         `Quick
         test_wrong_message_position;
+      Tztest.tztest "Test missing prerejection" `Quick test_missing_prerejection;
     ]
 end
 

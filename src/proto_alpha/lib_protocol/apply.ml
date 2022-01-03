@@ -1686,83 +1686,134 @@ let apply_external_manager_operation_content :
         message;
         previous_message_result;
         message_position;
-      } ->
-      Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
-      (* Check [level] *)
-      Tx_rollup_state.check_level_can_be_rejected state level >>?= fun () ->
-      (* Check [previous_message_result] *)
-      Tx_rollup_commitment.get ctxt tx_rollup level
-      >>=? fun (ctxt, commitment) ->
-      Tx_rollup_commitment.get_before_and_after_results
-        ctxt
-        tx_rollup
-        commitment
-        state
-        ~message_position
-      >>=? fun (ctxt, agreed_hash, rejected) ->
-      let computed =
-        Tx_rollup_commitment.hash_message_result previous_message_result
-      in
-      fail_unless
-        Tx_rollup_message_result_hash.(agreed_hash = computed)
-        (Tx_rollup_errors.Wrong_rejection_hashes
-           {
-             expected = agreed_hash;
-             provided = previous_message_result;
-             computed;
-           })
-      (* Check [message] *)
-      >>=? fun () ->
-      Tx_rollup_inbox.check_message_hash
-        ctxt
-        level
-        tx_rollup
-        ~position:message_position
-        message
-      >>=? fun ctxt ->
-      (* Check [proof] *)
-      Tx_rollup_l2_verifier.verify_proof
-        message
-        proof
-        ~agreed:previous_message_result
-        ~rejected
-      >>= fun verified ->
-      fail_unless verified Tx_rollup_errors.Invalid_proof >>=? fun () ->
-      (* Proof is correct, removing *)
-      Tx_rollup_commitment.reject_commitment ctxt tx_rollup state level
-      >>=? fun (ctxt, state) ->
-      (* Bond slashing, and removing *)
-      Tx_rollup_commitment.slash_bond ctxt tx_rollup commitment.committer
-      >>=? fun (ctxt, slashed) ->
-      (if slashed then
-       let source = Contract.implicit_contract commitment.committer in
-       let bid = Bond_id.Tx_rollup_bond_id tx_rollup in
-       Token.balance ctxt (`Frozen_bonds (source, bid)) >>=? fun (ctxt, burn) ->
-       Tez.(burn /? 2L) >>?= fun reward ->
-       let accuser = Contract.implicit_contract payer in
-       Token.transfer
-         ctxt
-         (`Frozen_bonds (source, bid))
-         `Tx_rollup_rejection_punishments
-         burn
-       >>=? fun (ctxt, burn_update) ->
-       Token.transfer
-         ctxt
-         `Tx_rollup_rejection_rewards
-         (`Contract accuser)
-         reward
-       >>=? fun (ctxt, reward_update) ->
-       return (ctxt, burn_update @ reward_update)
-      else return (ctxt, []))
-      >>=? fun (ctxt, balance_updates) ->
-      (* Update state and conclude *)
-      Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
+        commitment;
+      } -> (
+      match Contract.is_implicit source with
+      | None -> fail Tx_rollup_operation_with_non_implicit_contract
+      | Some key ->
+          Tx_rollup_commitment.commitment_exists ctxt tx_rollup level commitment
+          >>=? fun (ctxt, commitment_exists) ->
+          Tx_rollup_rejection.check_prerejection
+            ctxt
+            ~source:key
+            ~tx_rollup
+            ~level
+            ~message_position
+            ~proof
+          >>=? fun (ctxt, priority) ->
+          Tx_rollup_rejection.update_accepted_prerejection
+            ctxt
+            ~source:key
+            ~tx_rollup
+            ~level
+            ~commitment
+            ~commitment_exists
+            ~proof
+            ~priority
+          >>=? fun ctxt ->
+          (* If the commitment doesn't exist, there is nothing more to
+             do -- we're just (maybe) changing who gets credit for the
+             prerejection.  If the commitment does exist, it needs to
+             get removed, and the appropriate slashing applied.
+             There's some trickiness here: maybe a bad commitment was
+             resurrected. In that case, we still slash its bond.  But
+             we only reward one rejection per commitment.  This is
+             technically a minor hole in the reward system.  But
+             rejecting an already-rejected commitment doesn't require
+             the full machinery of a rollup node; one can just replay
+             an already-successful rejection.  And we don't expect
+             this to happen: why should a commiter throw good Tez
+             after bad by re-submitting a commitment that has already
+             been rejected? *)
+          (if commitment_exists then
+           Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
+           (* Check [level] *)
+           Tx_rollup_state.check_level_can_be_rejected state level
+           >>?= fun () ->
+           (* Check [previous_message_result] *)
+           Tx_rollup_commitment.get ctxt tx_rollup level
+           >>=? fun (ctxt, commitment) ->
+           Tx_rollup_commitment.get_before_and_after_results
+             ctxt
+             tx_rollup
+             commitment
+             state
+             ~message_position
+           >>=? fun (ctxt, agreed_hash, rejected) ->
+           let computed =
+             Tx_rollup_commitment.hash_message_result previous_message_result
+           in
+           fail_unless
+             Tx_rollup_message_result_hash.(agreed_hash = computed)
+             (Tx_rollup_errors.Wrong_rejection_hashes
+                {
+                  expected = agreed_hash;
+                  provided = previous_message_result;
+                  computed;
+                })
+           (* Check [message] *)
+           >>=? fun () ->
+           Tx_rollup_inbox.check_message_hash
+             ctxt
+             level
+             tx_rollup
+             ~position:message_position
+             message
+           >>=? fun ctxt ->
+           (* Check [proof] *)
+           Tx_rollup_l2_verifier.verify_proof
+             message
+             proof
+             ~agreed:previous_message_result
+             ~rejected
+           >>= fun verified ->
+           fail_unless verified Tx_rollup_errors.Invalid_proof >>=? fun () ->
+           (* Proof is correct, removing *)
+           Tx_rollup_commitment.reject_commitment ctxt tx_rollup state level
+           >>=? fun (ctxt, state) ->
+           (* Bond slashing, and removing *)
+           Tx_rollup_commitment.slash_bond ctxt tx_rollup commitment.committer
+           >>=? fun (ctxt, slashed) ->
+           (if slashed then
+            let source = Contract.implicit_contract commitment.committer in
+            let bid = Bond_id.Tx_rollup_bond_id tx_rollup in
+            Token.balance ctxt (`Frozen_bonds (source, bid))
+            >>=? fun (ctxt, burn) ->
+            Tez.(burn /? 2L) >>?= fun reward ->
+            let accuser = Contract.implicit_contract payer in
+            Token.transfer
+              ctxt
+              (`Frozen_bonds (source, bid))
+              `Tx_rollup_rejection_punishments
+              burn
+            >>=? fun (ctxt, burn_update) ->
+            Token.transfer
+              ctxt
+              `Tx_rollup_rejection_rewards
+              (`Contract accuser)
+              reward
+            >>=? fun (ctxt, reward_update) ->
+            return (ctxt, burn_update @ reward_update)
+           else return (ctxt, []))
+           >>=? fun (ctxt, balance_updates) ->
+           (* Update state and conclude *)
+           Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
+           return (ctxt, balance_updates)
+          else return (ctxt, []))
+          >>=? fun (ctxt, balance_updates) ->
+          let result =
+            Tx_rollup_rejection_result
+              {
+                consumed_gas = Gas.consumed ~since:before_operation ~until:ctxt;
+                balance_updates;
+              }
+          in
+          return (ctxt, result, []))
+  | Tx_rollup_prerejection {tx_rollup; hash} ->
+      Tx_rollup_rejection.prereject ctxt tx_rollup hash >>=? fun ctxt ->
       let result =
-        Tx_rollup_rejection_result
-          {
-            consumed_gas = Gas.consumed ~since:before_operation ~until:ctxt;
-            balance_updates;
-          }
+        Tx_rollup_prerejection_result
+          {consumed_gas = Gas.consumed ~since:before_operation ~until:ctxt}
       in
       return (ctxt, result, [])
   | Sc_rollup_originate {kind; boot_sector} ->
@@ -1929,7 +1980,7 @@ let precheck_manager_contents (type kind) ctxt (op : kind Kind.manager contents)
       >>?= fun () -> return ctxt
   | Tx_rollup_return_bond _ | Tx_rollup_finalize_commitment _
   | Tx_rollup_remove_commitment _ | Tx_rollup_rejection _ | Tx_rollup_withdraw _
-    ->
+  | Tx_rollup_prerejection _ ->
       assert_tx_rollup_feature_enabled ctxt >|=? fun () -> ctxt
   | Sc_rollup_originate _ | Sc_rollup_add_messages _ | Sc_rollup_cement _ ->
       assert_sc_rollup_feature_enabled ctxt >|=? fun () -> ctxt)
@@ -2039,7 +2090,7 @@ let burn_storage_fees :
   | Tx_rollup_submit_batch_result _ | Tx_rollup_commit_result _
   | Tx_rollup_return_bond_result _ | Tx_rollup_finalize_commitment_result _
   | Tx_rollup_remove_commitment_result _ | Tx_rollup_rejection_result _
-  | Tx_rollup_withdraw_result _ ->
+  | Tx_rollup_withdraw_result _ | Tx_rollup_prerejection_result _ ->
       return (ctxt, storage_limit, smopr)
   | Sc_rollup_originate_result payload ->
       Fees.burn_sc_rollup_origination_fees

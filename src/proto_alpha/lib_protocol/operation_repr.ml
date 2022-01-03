@@ -87,6 +87,8 @@ module Kind = struct
 
   type tx_rollup_withdraw = Tx_rollup_withdraw_kind
 
+  type tx_rollup_prerejection = Tx_rollup_prerejection_kind
+
   type sc_rollup_originate = Sc_rollup_originate_kind
 
   type sc_rollup_add_messages = Sc_rollup_add_messages_kind
@@ -110,6 +112,7 @@ module Kind = struct
         : tx_rollup_remove_commitment manager
     | Tx_rollup_rejection_manager_kind : tx_rollup_rejection manager
     | Tx_rollup_withdraw_manager_kind : tx_rollup_withdraw manager
+    | Tx_rollup_prerejection_manager_kind : tx_rollup_prerejection manager
     | Sc_rollup_originate_manager_kind : sc_rollup_originate manager
     | Sc_rollup_add_messages_manager_kind : sc_rollup_add_messages manager
     | Sc_rollup_cement_manager_kind : sc_rollup_cement manager
@@ -323,6 +326,7 @@ and _ manager_operation =
       message_position : int;
       previous_message_result : Tx_rollup_commitment_repr.message_result;
       proof : Tx_rollup_l2_proof.t;
+      commitment : Tx_rollup_commitment_repr.Commitment_hash.t;
     }
       -> Kind.tx_rollup_rejection manager_operation
   | Tx_rollup_withdraw : {
@@ -339,6 +343,11 @@ and _ manager_operation =
       entrypoint : Entrypoint_repr.t;
     }
       -> Kind.tx_rollup_withdraw manager_operation
+  | Tx_rollup_prerejection : {
+      tx_rollup : Tx_rollup_repr.t;
+      hash : Tx_rollup_rejection_repr.Rejection_hash.t;
+    }
+      -> Kind.tx_rollup_prerejection manager_operation
   | Sc_rollup_originate : {
       kind : Sc_rollup_repr.Kind.t;
       boot_sector : Sc_rollup_repr.PVM.boot_sector;
@@ -375,6 +384,7 @@ let manager_kind : type kind. kind manager_operation -> kind Kind.manager =
       Kind.Tx_rollup_remove_commitment_manager_kind
   | Tx_rollup_rejection _ -> Kind.Tx_rollup_rejection_manager_kind
   | Tx_rollup_withdraw _ -> Kind.Tx_rollup_withdraw_manager_kind
+  | Tx_rollup_prerejection _ -> Kind.Tx_rollup_prerejection_manager_kind
   | Sc_rollup_originate _ -> Kind.Sc_rollup_originate_manager_kind
   | Sc_rollup_add_messages _ -> Kind.Sc_rollup_add_messages_manager_kind
   | Sc_rollup_cement _ -> Kind.Sc_rollup_cement_manager_kind
@@ -447,6 +457,8 @@ let tx_rollup_operation_remove_commitment_tag =
 let tx_rollup_operation_rejection_tag = tx_rollup_operation_tag_offset + 6
 
 let tx_rollup_operation_withdraw_tag = tx_rollup_operation_tag_offset + 7
+
+let tx_rollup_operation_prerejection_tag = tx_rollup_operation_tag_offset + 8
 
 let sc_rollup_operation_tag_offset = 200
 
@@ -713,7 +725,7 @@ module Encoding = struct
           tag = tx_rollup_operation_rejection_tag;
           name = "tx_rollup_rejection";
           encoding =
-            obj6
+            obj7
               (req "rollup" Tx_rollup_repr.encoding)
               (req "level" Tx_rollup_level_repr.encoding)
               (req "message" Tx_rollup_message_repr.encoding)
@@ -721,7 +733,10 @@ module Encoding = struct
               (req
                  "previous_message_result"
                  Tx_rollup_commitment_repr.message_result_encoding)
-              (req "proof" bool);
+              (req "proof" bool)
+              (req
+                 "commitment"
+                 Tx_rollup_commitment_repr.Commitment_hash.encoding);
           select =
             (function
             | Manager (Tx_rollup_rejection _ as op) -> Some op | _ -> None);
@@ -735,20 +750,23 @@ module Encoding = struct
                   message_position;
                   previous_message_result;
                   proof;
+                  commitment;
                 } ->
                 ( tx_rollup,
                   level,
                   message,
                   Z.of_int message_position,
                   previous_message_result,
-                  proof ));
+                  proof,
+                  commitment ));
           inj =
             (fun ( tx_rollup,
                    level,
                    message,
                    message_position,
                    previous_message_result,
-                   proof ) ->
+                   proof,
+                   commitment ) ->
               Tx_rollup_rejection
                 {
                   tx_rollup;
@@ -757,6 +775,7 @@ module Encoding = struct
                   message_position = Z.to_int message_position;
                   previous_message_result;
                   proof;
+                  commitment;
                 });
         }
 
@@ -837,6 +856,25 @@ module Encoding = struct
                   destination;
                   entrypoint;
                 });
+        }
+
+    let[@coq_axiom_with_reason "gadt"] tx_rollup_prerejection_case =
+      MCase
+        {
+          tag = tx_rollup_operation_prerejection_tag;
+          name = "tx_rollup_prerejection";
+          encoding =
+            obj2
+              (req "tx_rollup" Tx_rollup_repr.encoding)
+              (req "hash" Tx_rollup_rejection_repr.Rejection_hash.encoding);
+          select =
+            (function
+            | Manager (Tx_rollup_prerejection _ as op) -> Some op | _ -> None);
+          proj =
+            (function
+            | Tx_rollup_prerejection {tx_rollup; hash} -> (tx_rollup, hash));
+          inj =
+            (fun (tx_rollup, hash) -> Tx_rollup_prerejection {tx_rollup; hash});
         }
 
     let[@coq_axiom_with_reason "gadt"] sc_rollup_originate_case =
@@ -1231,6 +1269,11 @@ module Encoding = struct
       tx_rollup_operation_withdraw_tag
       Manager_operations.tx_rollup_withdraw_case
 
+  let tx_rollup_prerejection_case =
+    make_manager_case
+      tx_rollup_operation_prerejection_tag
+      Manager_operations.tx_rollup_prerejection_case
+
   let sc_rollup_originate_case =
     make_manager_case
       sc_rollup_operation_origination_tag
@@ -1282,6 +1325,7 @@ module Encoding = struct
            make tx_rollup_remove_commitment_case;
            make tx_rollup_rejection_case;
            make tx_rollup_withdraw_case;
+           make tx_rollup_prerejection_case;
            make sc_rollup_originate_case;
            make sc_rollup_add_messages_case;
            make sc_rollup_cement_case;
@@ -1488,6 +1532,8 @@ let equal_manager_operation_kind :
   | (Tx_rollup_rejection _, _) -> None
   | (Tx_rollup_withdraw _, Tx_rollup_withdraw _) -> Some Eq
   | (Tx_rollup_withdraw _, _) -> None
+  | (Tx_rollup_prerejection _, Tx_rollup_prerejection _) -> Some Eq
+  | (Tx_rollup_prerejection _, _) -> None
   | (Sc_rollup_originate _, Sc_rollup_originate _) -> Some Eq
   | (Sc_rollup_originate _, _) -> None
   | (Sc_rollup_add_messages _, Sc_rollup_add_messages _) -> Some Eq

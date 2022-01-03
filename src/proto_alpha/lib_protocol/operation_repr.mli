@@ -115,6 +115,8 @@ module Kind : sig
 
   type tx_rollup_withdraw = Tx_rollup_withdraw_kind
 
+  type tx_rollup_prerejection = Tx_rollup_prerejection_kind
+
   type sc_rollup_originate = Sc_rollup_originate_kind
 
   type sc_rollup_add_messages = Sc_rollup_add_messages_kind
@@ -138,6 +140,7 @@ module Kind : sig
         : tx_rollup_remove_commitment manager
     | Tx_rollup_rejection_manager_kind : tx_rollup_rejection manager
     | Tx_rollup_withdraw_manager_kind : tx_rollup_withdraw manager
+    | Tx_rollup_prerejection_manager_kind : tx_rollup_prerejection manager
     | Sc_rollup_originate_manager_kind : sc_rollup_originate manager
     | Sc_rollup_add_messages_manager_kind : sc_rollup_add_messages manager
     | Sc_rollup_cement_manager_kind : sc_rollup_cement manager
@@ -368,6 +371,7 @@ and _ manager_operation =
       message_position : int;
       previous_message_result : Tx_rollup_commitment_repr.message_result;
       proof : Tx_rollup_l2_proof.t;
+      commitment : Tx_rollup_commitment_repr.Commitment_hash.t;
     }
       -> Kind.tx_rollup_rejection manager_operation
       (** [Tx_rollup_withdraw] allows an implicit account (the "claimer") to
@@ -404,6 +408,11 @@ and _ manager_operation =
           (** The entrypoint of the smart contract address that should receive the tickets. *)
     }
       -> Kind.tx_rollup_withdraw manager_operation
+  | Tx_rollup_prerejection : {
+      tx_rollup : Tx_rollup_repr.t;
+      hash : Tx_rollup_rejection_repr.Rejection_hash.t;
+    }
+      -> Kind.tx_rollup_prerejection manager_operation
   (* [Sc_rollup_originate] allows an implicit account to originate a new
      smart contract rollup (initialized with a given boot
      sector). *)
@@ -553,6 +562,9 @@ module Encoding : sig
 
   val tx_rollup_withdraw_case : Kind.tx_rollup_withdraw Kind.manager case
 
+  val tx_rollup_prerejection_case :
+    Kind.tx_rollup_prerejection Kind.manager case
+
   val sc_rollup_originate_case : Kind.sc_rollup_originate Kind.manager case
 
   val sc_rollup_add_messages_case :
@@ -606,6 +618,8 @@ module Encoding : sig
     val tx_rollup_rejection_case : Kind.tx_rollup_rejection case
 
     val tx_rollup_withdraw_case : Kind.tx_rollup_withdraw case
+
+    val tx_rollup_prerejection_case : Kind.tx_rollup_prerejection case
 
     val sc_rollup_originate_case : Kind.sc_rollup_originate case
 

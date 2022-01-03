@@ -2539,6 +2539,11 @@ let commands_rw () =
            ~name:"withdrawals_merkle_root"
            ~desc:"the hash of the merkelised withdraw list"
            Client_proto_args.string_parameter
+      @@ prefix "with" @@ prefix "commitment"
+      @@ Clic.param
+           ~name:"commitment"
+           ~desc:"commitment being rejected"
+           string_parameter
       @@ prefix "to" @@ tx_rollup_param @@ prefix "from"
       @@ ContractAlias.destination_param
            ~name:"src"
@@ -2562,6 +2567,7 @@ let commands_rw () =
            proof
            context_hash
            withdrawals_merkle_root
+           commitment
            tx_rollup
            (_, source)
            cctxt ->
@@ -2604,6 +2610,7 @@ let commands_rw () =
               ~proof
               ~context_hash
               ~withdrawals_merkle_root
+              ~commitment
               ()
             >>=? fun _res -> return_unit);
     command

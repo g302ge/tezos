@@ -179,3 +179,13 @@ val get_before_and_after_results :
   * Tx_rollup_commitment_repr.Message_result_hash.t)
   tzresult
   Lwt.t
+
+(** [commitment_exists ctxt tx_rollup level commitment_hash]
+    checks that the commitment at level [level] is equal to
+    [commitment_hash]. *)
+val commitment_exists :
+  Raw_context.t ->
+  Tx_rollup_repr.t ->
+  Tx_rollup_level_repr.t ->
+  Tx_rollup_commitment_repr.Commitment_hash.t ->
+  (Raw_context.t * bool) tzresult Lwt.t

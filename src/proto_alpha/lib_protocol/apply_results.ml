@@ -184,6 +184,10 @@ type _ successful_manager_operation_result =
       consumed_gas : Gas.Arith.fp;
     }
       -> Kind.tx_rollup_withdraw successful_manager_operation_result
+  | Tx_rollup_prerejection_result : {
+      consumed_gas : Gas.Arith.fp;
+    }
+      -> Kind.tx_rollup_prerejection successful_manager_operation_result
   | Sc_rollup_originate_result : {
       balance_updates : Receipt.balance_updates;
       address : Sc_rollup.Address.t;
@@ -755,6 +759,26 @@ module Manager_result = struct
         assert (Gas.Arith.(equal (ceil consumed_milligas) consumed_gas)) ;
         Tx_rollup_withdraw_result {consumed_gas = consumed_milligas})
 
+  let[@coq_axiom_with_reason "gadt"] tx_rollup_prerejection_case =
+    make
+      ~op_case:Operation.Encoding.Manager_operations.tx_rollup_prerejection_case
+      ~encoding:
+        Data_encoding.(
+          obj2
+            (dft "consumed_gas" Gas.Arith.n_integral_encoding Gas.Arith.zero)
+            (dft "consumed_milligas" Gas.Arith.n_fp_encoding Gas.Arith.zero))
+      ~kind:Kind.Tx_rollup_prerejection_manager_kind
+      ~select:(function
+        | Successful_manager_result (Tx_rollup_prerejection_result _ as op) ->
+            Some op
+        | _ -> None)
+      ~proj:(function
+        | Tx_rollup_prerejection_result {consumed_gas} ->
+            (Gas.Arith.ceil consumed_gas, consumed_gas))
+      ~inj:(fun (consumed_gas, consumed_milligas) ->
+        assert (Gas.Arith.(equal (ceil consumed_milligas) consumed_gas)) ;
+        Tx_rollup_prerejection_result {consumed_gas = consumed_milligas})
+
   let[@coq_axiom_with_reason "gadt"] sc_rollup_originate_case =
     make
       ~op_case:Operation.Encoding.Manager_operations.sc_rollup_originate_case
@@ -1138,6 +1162,10 @@ let equal_manager_kind :
     ->
       Some Eq
   | (Kind.Tx_rollup_withdraw_manager_kind, _) -> None
+  | ( Kind.Tx_rollup_prerejection_manager_kind,
+      Kind.Tx_rollup_prerejection_manager_kind ) ->
+      Some Eq
+  | (Kind.Tx_rollup_prerejection_manager_kind, _) -> None
   | ( Kind.Sc_rollup_originate_manager_kind,
       Kind.Sc_rollup_originate_manager_kind ) ->
       Some Eq
@@ -1590,6 +1618,17 @@ module Encoding = struct
             Some (op, res)
         | _ -> None)
 
+  let[@coq_axiom_with_reason "gadt"] tx_rollup_prerejection_case =
+    make_manager_case
+      Operation.Encoding.tx_rollup_prerejection_case
+      Manager_result.tx_rollup_prerejection_case
+      (function
+        | Contents_and_result
+            ( (Manager_operation {operation = Tx_rollup_prerejection _; _} as op),
+              res ) ->
+            Some (op, res)
+        | _ -> None)
+
   let[@coq_axiom_with_reason "gadt"] sc_rollup_originate_case =
     make_manager_case
       Operation.Encoding.sc_rollup_originate_case
@@ -1666,6 +1705,7 @@ let contents_result_encoding =
          make tx_rollup_remove_commitment_case;
          make tx_rollup_rejection_case;
          make tx_rollup_withdraw_case;
+         make tx_rollup_prerejection_case;
          make sc_rollup_originate_case;
          make sc_rollup_add_messages_case;
          make sc_rollup_cement_case;
@@ -1717,6 +1757,7 @@ let contents_and_result_encoding =
          make tx_rollup_finalize_commitment_case;
          make tx_rollup_remove_commitment_case;
          make tx_rollup_rejection_case;
+         make tx_rollup_prerejection_case;
          make sc_rollup_originate_case;
          make sc_rollup_add_messages_case;
          make sc_rollup_cement_case;
@@ -2217,6 +2258,32 @@ let kind_equal :
         } ) ->
       Some Eq
   | (Manager_operation {operation = Tx_rollup_withdraw _; _}, _) -> None
+  | ( Manager_operation {operation = Tx_rollup_prerejection _; _},
+      Manager_operation_result
+        {operation_result = Applied (Tx_rollup_prerejection_result _); _} ) ->
+      Some Eq
+  | ( Manager_operation {operation = Tx_rollup_prerejection _; _},
+      Manager_operation_result
+        {operation_result = Backtracked (Tx_rollup_prerejection_result _, _); _}
+    ) ->
+      Some Eq
+  | ( Manager_operation {operation = Tx_rollup_prerejection _; _},
+      Manager_operation_result
+        {
+          operation_result =
+            Failed (Alpha_context.Kind.Tx_rollup_prerejection_manager_kind, _);
+          _;
+        } ) ->
+      Some Eq
+  | ( Manager_operation {operation = Tx_rollup_prerejection _; _},
+      Manager_operation_result
+        {
+          operation_result =
+            Skipped Alpha_context.Kind.Tx_rollup_prerejection_manager_kind;
+          _;
+        } ) ->
+      Some Eq
+  | (Manager_operation {operation = Tx_rollup_prerejection _; _}, _) -> None
   | ( Manager_operation {operation = Sc_rollup_originate _; _},
       Manager_operation_result
         {operation_result = Applied (Sc_rollup_originate_result _); _} ) ->

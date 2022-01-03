@@ -1879,6 +1879,13 @@ module Tx_rollup_commitment : sig
     tzresult
     Lwt.t
 
+  val commitment_exists :
+    context ->
+    Tx_rollup.t ->
+    Tx_rollup_level.t ->
+    Tx_rollup_commitment_hash.t ->
+    (context * bool) tzresult Lwt.t
+
   val get_finalized :
     context ->
     Tx_rollup.t ->
@@ -2708,6 +2715,8 @@ module Kind : sig
 
   type tx_rollup_withdraw = Tx_rollup_withdraw_kind
 
+  type tx_rollup_prerejection = Tx_rollup_prerejection_kind
+
   type sc_rollup_originate = Sc_rollup_originate_kind
 
   type sc_rollup_add_messages = Sc_rollup_add_messages_kind
@@ -2731,6 +2740,7 @@ module Kind : sig
         : tx_rollup_remove_commitment manager
     | Tx_rollup_rejection_manager_kind : tx_rollup_rejection manager
     | Tx_rollup_withdraw_manager_kind : tx_rollup_withdraw manager
+    | Tx_rollup_prerejection_manager_kind : tx_rollup_prerejection manager
     | Sc_rollup_originate_manager_kind : sc_rollup_originate manager
     | Sc_rollup_add_messages_manager_kind : sc_rollup_add_messages manager
     | Sc_rollup_cement_manager_kind : sc_rollup_cement manager
@@ -2884,6 +2894,7 @@ and _ manager_operation =
       message_position : int;
       previous_message_result : Tx_rollup_commitment.message_result;
       proof : Tx_rollup_l2_proof.t;
+      commitment : Tx_rollup_commitment_hash.t;
     }
       -> Kind.tx_rollup_rejection manager_operation
   | Tx_rollup_withdraw : {
@@ -2900,6 +2911,11 @@ and _ manager_operation =
       entrypoint : Entrypoint.t;
     }
       -> Kind.tx_rollup_withdraw manager_operation
+  | Tx_rollup_prerejection : {
+      tx_rollup : Tx_rollup.t;
+      hash : Tx_rollup_rejection.Rejection_hash.t;
+    }
+      -> Kind.tx_rollup_prerejection manager_operation
   | Sc_rollup_originate : {
       kind : Sc_rollup.Kind.t;
       boot_sector : Sc_rollup.PVM.boot_sector;
@@ -3059,6 +3075,9 @@ module Operation : sig
 
     val tx_rollup_withdraw_case : Kind.tx_rollup_withdraw Kind.manager case
 
+    val tx_rollup_prerejection_case :
+      Kind.tx_rollup_prerejection Kind.manager case
+
     val register_global_constant_case :
       Kind.register_global_constant Kind.manager case
 
@@ -3118,6 +3137,8 @@ module Operation : sig
       val tx_rollup_rejection_case : Kind.tx_rollup_rejection case
 
       val tx_rollup_withdraw_case : Kind.tx_rollup_withdraw case
+
+      val tx_rollup_prerejection_case : Kind.tx_rollup_prerejection case
 
       val sc_rollup_originate_case : Kind.sc_rollup_originate case
 

@@ -641,7 +641,8 @@ let tx_rollup_withdraw ?counter ?fee ?gas_limit ?storage_limit ctxt
 let tx_rollup_reject ?counter ?fee ?gas_limit ?storage_limit ctxt
     (source : Contract.t) (tx_rollup : Tx_rollup.t) (level : Tx_rollup_level.t)
     (message : Tx_rollup_message.t) ~(message_position : int) ~(proof : bool)
-    ~(previous_message_result : Tx_rollup_commitment.message_result) =
+    ~(previous_message_result : Tx_rollup_commitment.message_result)
+    ~(commitment : Tx_rollup_commitment_hash.t) =
   manager_operation
     ?counter
     ?fee
@@ -657,7 +658,35 @@ let tx_rollup_reject ?counter ?fee ?gas_limit ?storage_limit ctxt
          message_position;
          proof;
          previous_message_result;
+         commitment;
        })
   >>=? fun to_sign_op ->
   Context.Contract.manager ctxt source >|=? fun account ->
   sign account.sk ctxt to_sign_op
+
+let tx_rollup_prereject ?counter ?fee ?gas_limit ?storage_limit ctxt
+    ~(source : Contract.t) ~(tx_rollup : Tx_rollup.t)
+    ~(level : Tx_rollup_level.t) ~(message_position : int)
+    ~(proof : Tx_rollup_l2_proof.t) =
+  match Contract.is_implicit source with
+  | None -> failwith "Expected an implicit contract"
+  | Some key ->
+      let hash =
+        Tx_rollup_rejection.generate_prerejection
+          ~source:key
+          ~tx_rollup
+          ~level
+          ~message_position
+          ~proof
+      in
+      manager_operation
+        ?counter
+        ?fee
+        ?gas_limit
+        ?storage_limit
+        ~source
+        ctxt
+        (Tx_rollup_prerejection {tx_rollup; hash})
+      >>=? fun to_sign_op ->
+      Context.Contract.manager ctxt source >|=? fun account ->
+      sign account.sk ctxt to_sign_op
