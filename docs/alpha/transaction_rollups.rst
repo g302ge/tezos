@@ -74,8 +74,8 @@ Introduction to Transaction Rollups
 rollups in Tezos, characterized by the following principles:
 
 #. The semantics of the messages consists of the transfer of assets represented as Michelson tickets.
-#. The procedure to reject erroneous hashes allows for a short
-   finality period of 30 blocks.
+#. The procedure to reject erroneous hashes allows for a finality
+   period of 2000 blocks.
 #. They are implemented as part of the economic protocol of Tezos
    directly, not as smart contracts.
 
@@ -298,6 +298,157 @@ A batch of transactions is invalid if the aggregated BLS signature is incorrect 
 batch is discarded by the transaction rollup node, and the counters of
 the signers are not incremented. This means they can be submitted
 again in a batch with a valid signature.
+
+Inboxes and levels
+******************
+
+Each layer-2 message exists in an **inbox**.  A layer-1 block has at most
+one inbox per rollup. Inboxes are identified by a **rollup level**.
+Each rollup maintains its own set of levels. So, layer-1 block 24601
+might correspond to rollup level 0 for rollup A, rollup level 3 for
+rollup B, and no rollup level at all for rollup C. Empty inboxes
+do not exist; an inbox is created on receipt of the first message
+at a given layer-1 level.
+
+Commitments and rejections
+**************************
+
+In order to ensure that layer-2 transfers and withdrawals_ are
+correctly computed, rollup nodes issue **commitments**. A commitment
+describes (using Merkle tree hashes) the state of a rollup after each
+message of an inbox, and the effects of those messages.
+
+The lifecycle of a rollup level is: uncommitted, then committed,
+then finalized, then deleted.
+
+#. Uncommitted: At the uncommitted stage, there is no commitment. When
+   a commitment for an inbox is submitted using an layer-1 operation,
+   the level moves to the committed stage.
+
+#. Committed: During this stage, commitments can be rejected_, moving
+   the inbox back to the uncommitted stage.  An inbox remains in this
+   stage until its commitment has been **finalized** by a finalize
+   operation.  Finalize operations are only accepted for commitments
+   that have survived for more than 2000 blocks (the **finality
+   period**, defined in ``tx_rollup_finality_period``) without being
+   rejected_.  The finalize operation removes the inbox from the
+   context.
+
+#. Finalized: During this stage, any withdrawals_ from
+   this block can occur.  Commitments can no longer be rejected.
+
+#. Deleted: Finally, after the **withdrawal period**
+   (``tx_rollup_withdraw_period`` = 60000 blocks), the commitment can
+   be removed from the context by another layer-1 operation.
+   Withdrawals from this inbox can no longer occur.
+
+The age of the commitment starts at the block in which it is
+submitted.  then finalized, then deleted. At the uncommitted stage,
+there is no commitment. A commitment for an inbox is submitted using
+an layer-1 operation, moving to the committed stage. During this
+stage, commitments can be rejected_, moving the inbox back to the
+uncommitted stage. A commitment which has survived for more than 2000
+blocks (the **finality period**, defined in
+``tx_rollup_finality_period``) without being rejected can be
+**finalized**, at which point the corresponding inbox can be removed
+from the context.  Now any _withdrawals from this block can
+occur. Finally, after the **withdrawal period**
+(``tx_rollup_withdraw_period`` = 60000 blocks), the commitment can be
+removed by another layer-1 operation. The age of the commitment starts
+at the block in which it is submitted.
+
+A commitment also includes the predecessor commitment's hash (except
+in the case of the first commitment for a rollup) and the level of the
+block that it is committing to, as well as the level's inbox hash (in
+case of reorganizations). More precisely, the structure of a
+commitment batch is: H(l2 context hash, withdraw list). We save
+operation size by storing only a single hash, at the cost of more
+complex rejection and withdrawal operations. There is exactly one
+valid commitment possible for a given block, because the computation
+of the Merkle tree proof of the layer-2 operations is deterministic.
+
+At most one commitment is stored per level. If a commitment operation
+is attempted for a level that already has a non-rejected commitment,
+it will fail.
+
+Finalization is implemented by a layer-1 operation, which finalizes the
+oldest commitment. This allows finalization to be carbonated. A
+commitment which has been finalized can have its inbox removed from
+the context.
+
+After finalization, a commitment sticks around for the withdrawal
+period, and then can be deleted by a layer-1 **remove commitment**
+operation. The withdraw period needs to be long enough so that an
+attempt by 33% of bakers to steal from a rollup by censoring
+rejections can be noticed, and avoided by forking the chain. For the
+most recent commitment deleted, the context keeps the commitment's
+hash and last batch around in case we need to examine them to reject
+its successor.
+
+The inbox for a level is only deleted during commitment finalization.
+If no commitments are made, it is possible for inboxes to pile up,
+which violates our gas assumptions that inboxes are temporary. To
+prevent this, if there are more than
+``tx_rollup_max_unfinalized_levels`` = 2100 inbox levels with messages
+but without finalized commitments, no further messages are accepted on
+the rollup until a commitment is finalized.
+
+In order to issue a commitment, a bond is required. The bond is
+expensive enough (``tx_rollup_commitment_bond`` = 10_000 Tez) to
+discourage bad commitments. One bond can support any number of
+commitments on a single rollup. The bond is collected at the time that
+a given contract creates its first commitment is on a rollup. It may
+be refunded by another layer-1 operation, once the last commitment
+from its creator has been finalized (that is, after its finality
+period).  The bond is treated just like frozen balances for the
+purposes of delegation.
+
+.. _rejected:
+
+If a commitment is wrong (that is, its Merkle proof does not
+correspond to the correct execution trace of the layer-2 apply
+function), it may be .._rejected: **rejected**. A rejection operation
+for a commitment names one of the batches of the commitment, and
+includes a Merkle proof of its incorrectness. A layer-1 node can then
+replay just the transfers of a single batch to determine whether the
+rejection is valid. Because of the compact structure of commitments, a
+rejection also must include the predecessor batch's layer-2 context
+hash, as a staring point to verify the proof. And the withdraw list
+must be included, so that the layer-2 context hash can be verified
+against the disputed batch's predecessor.  A rejection must be
+included in a block within the finality period of the block that the
+commitment is included in.
+
+It might be possible to create an inbox whose proof is too long to fit
+into a rejection operation. We have imposed limits intended to avoid
+this, but it is possible that our limits are wrong. To handle this
+possibility, we impose a hard limit on rejection proof size, which is
+less than the operation size limit. If a rejection proof would be
+greater than this size, the entire inbox will be treated as a no-op.
+To reject such a commitment, the rejection operation will contain the
+proof truncated down to just above the size limit. If proof
+verification fails because of a too-short proof that is nonetheless
+longer than the limit, we treat this as the successful verification of
+an empty inbox. That is, if the commitment committed to something
+other than the empty inbox, the rejection succeeds.
+
+In the case of a valid rejection, half of the commitment bond goes to
+the rejector; the rest is burned.
+
+.. _withdrawals:
+
+Ticket withdrawals
+******************
+
+Withdrawing a ticket from a rollup back to layer-1 is a two-phase
+operation. First, a layer-2 message is submitted requesting the
+withdrawal. As with any other message, it is included in an inbox,
+gets a commitment, and is finalized. After that message has been
+finalized, a withdraw operation can be sent. The operation includes a
+Merkle proof showing that the withdrawal is included in a finalized
+commitment. If a withdrawal operation is not sent before the
+``tx_rollup_withdraw_period``, the ticket is destroyed irrecoverably.
+
 
 Getting Started
 ---------------
