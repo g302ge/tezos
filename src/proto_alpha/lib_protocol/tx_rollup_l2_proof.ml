@@ -27,3 +27,5 @@
 type t = bool
 
 let encoding = Data_encoding.bool
+
+let ( = ) t1 t2 = Compare.Bool.(t1 = t2)

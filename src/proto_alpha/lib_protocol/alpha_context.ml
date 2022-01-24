@@ -306,6 +306,11 @@ module Tx_rollup_commitment = struct
   include Tx_rollup_commitment_storage
 end
 
+module Tx_rollup_rejection = struct
+  include Tx_rollup_rejection_repr
+  include Tx_rollup_rejection_storage
+end
+
 module Tx_rollup_errors = Tx_rollup_errors_repr
 module Global_constants_storage = Global_constants_storage
 
