@@ -2204,6 +2204,7 @@ module Registration_section = struct
                kinfo = kinfo (option key_hash @$ mutez @$ unit @$ bot);
                storage_type = unit;
                arg_type = unit;
+               event_type = No_event_ty;
                lambda;
                views = Script_map.empty string_key;
                entrypoints = no_entrypoints;

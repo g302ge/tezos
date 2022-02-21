@@ -57,11 +57,11 @@ let run_step ctxt code accu stack =
   let open Script_interpreter in
   let open Contract_helpers in
   step None ctxt default_step_constants code accu stack
-  >>=? fun ((_, _, ctxt') as r) ->
+  >>=? fun ((_, _, fst_ctxt, _) as r) ->
   step (Some logger) ctxt default_step_constants code accu stack
-  >>=? fun (_, _, ctxt'') ->
-  if Gas.(remaining_operation_gas ctxt' <> remaining_operation_gas ctxt'') then
-    Alcotest.failf "Logging should not have an impact on gas consumption." ;
+  >>=? fun (_, _, snd_ctxt, _) ->
+  if Gas.(remaining_operation_gas fst_ctxt <> remaining_operation_gas snd_ctxt)
+  then Alcotest.failf "Logging should not have an impact on gas consumption." ;
   return r
 
 (** Runs a script with an ill-typed parameter and verifies that a

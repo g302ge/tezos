@@ -2315,6 +2315,7 @@ module RPC = struct
                        operations;
                        lazy_storage_diff;
                        ticket_diffs = _;
+                       events = _;
                      },
                      _ ) ->
           ( storage,
@@ -2386,6 +2387,7 @@ module RPC = struct
                          operations;
                          lazy_storage_diff;
                          ticket_diffs = _;
+                         events = _;
                        },
                        _ctxt ),
                      trace ) ->
@@ -2485,6 +2487,7 @@ module RPC = struct
                        storage = _;
                        lazy_storage_diff = _;
                        ticket_diffs = _;
+                       events = _;
                      },
                      _ctxt ) ->
           View_helpers.extract_parameter_from_operations
@@ -2523,6 +2526,7 @@ module RPC = struct
                            code;
                            arg_type;
                            storage_type;
+                           event_type;
                            views;
                            entrypoints;
                            code_size;
@@ -2542,6 +2546,7 @@ module RPC = struct
                    code;
                    arg_type;
                    storage_type;
+                   event_type;
                    views;
                    entrypoints;
                    code_size;

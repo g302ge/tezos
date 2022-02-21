@@ -977,6 +977,11 @@ module Cost_of = struct
     (* model SAPLING_DIFF_ENCODING *)
     let cost_SAPLING_DIFF_ENCODING ~nfs ~cms =
       S.safe_int ((nfs * 22) + (cms * 215))
+
+    (* TODO: !4656
+       Determine the true cost of calling EMIT after some consultation
+    *)
+    let cost_EMIT = S.safe_int 15
   end
 
   module Interpreter = struct
@@ -1327,6 +1332,8 @@ module Cost_of = struct
     let split_ticket _ amount_a amount_b =
       atomic_step_cost
         (cost_N_ISplit_ticket (int_bytes amount_a) (int_bytes amount_b))
+
+    let emit = atomic_step_cost cost_EMIT
 
     let open_chest ~chest ~time =
       let plaintext =

@@ -1737,6 +1737,7 @@ let parse_storage_ty :
           (Ex_ty ty, ctxt))
   | _ -> (parse_normal_storage_ty [@tailcall]) ctxt ~stack_depth ~legacy node
 
+(* check_packable: determine if a `ty` is packable into Michelson *)
 let check_packable ~legacy loc root =
   let rec check : type t tc. (t, tc) ty -> unit tzresult = function
     (* /!\ When adding new lazy storage kinds, be sure to return an error. /!\
@@ -1779,10 +1780,13 @@ let check_packable ~legacy loc root =
   in
   check root
 
+let parse_event_ty = parse_packable_ty
+
 type toplevel = {
   code_field : Script.node;
   arg_type : Script.node;
   storage_type : Script.node;
+  event_type : Script.node option;
   views : view_map;
 }
 
@@ -1792,6 +1796,7 @@ type ('arg, 'storage) code =
         (('arg, 'storage) pair, (operation boxed_list, 'storage) pair) lambda;
       arg_type : ('arg, _) ty;
       storage_type : ('storage, _) ty;
+      event_type : opt_event_ty;
       views : view_map;
       entrypoints : 'arg entrypoints;
       code_size : Cache_memory_helpers.sint;
@@ -4551,7 +4556,8 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
       check_two_var_annot loc annot >>?= fun () ->
       let canonical_code = Micheline.strip_locations code in
       parse_toplevel ctxt ~legacy canonical_code
-      >>?= fun ({arg_type; storage_type; code_field; views}, ctxt) ->
+      >>?= fun ({arg_type; storage_type; code_field; views; event_type}, ctxt)
+        ->
       record_trace
         (Ill_formed_type (Some "parameter", canonical_code, location arg_type))
         (parse_parameter_ty_and_entrypoints
@@ -4572,10 +4578,27 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
       pair_t loc arg_type storage_type >>?= fun (Ty_ex_c arg_type_full) ->
       pair_t loc list_operation_t storage_type
       >>?= fun (Ty_ex_c ret_type_full) ->
+      Option.map_e
+        (fun ty ->
+          record_trace
+            (Ill_formed_type (Some "event", canonical_code, location ty))
+            (parse_event_ty ctxt ~stack_depth:(stack_depth + 1) ~legacy ty))
+        event_type
+      >>?= fun event_type ->
+      let (event_type_opt, Ex_ty event_type, ctxt) =
+        Option.map
+          (fun (Ex_ty ty, ctxt) -> (Some_event_ty ty, Ex_ty ty, ctxt))
+          event_type
+        |> Option.value_f ~default:(fun _ -> (No_event_ty, Ex_ty Never_t, ctxt))
+      in
       trace
         (Ill_typed_contract (canonical_code, []))
         (parse_returning
-           (Tc_context.toplevel ~storage_type ~param_type:arg_type ~entrypoints)
+           (Tc_context.toplevel
+              ~storage_type
+              ~param_type:arg_type
+              ~event_type
+              ~entrypoints)
            ctxt
            ~legacy
            ?type_logger
@@ -4605,7 +4628,16 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
           apply =
             (fun kinfo k ->
               ICreate_contract
-                {kinfo; storage_type; arg_type; lambda; views; entrypoints; k});
+                {
+                  kinfo;
+                  storage_type;
+                  arg_type;
+                  event_type = event_type_opt;
+                  lambda;
+                  views;
+                  entrypoints;
+                  k;
+                });
         }
       in
       let stack = Item_t (operation_t, Item_t (address_t, rest)) in
@@ -4678,7 +4710,8 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
           | View ->
               error
                 (Forbidden_instr_in_context (loc, Script_tc_errors.View, prim))
-          | Toplevel {param_type; entrypoints; storage_type = _} ->
+          | Toplevel {param_type; entrypoints; storage_type = _; event_type = _}
+            ->
               Gas_monad.run ctxt
               @@ find_entrypoint
                    ~error_details:Informative
@@ -4865,6 +4898,21 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
       Item_t (Chest_key_t, Item_t (Chest_t, Item_t (Nat_t, rest))) ) ->
       let instr = {apply = (fun kinfo k -> IOpen_chest (kinfo, k))} in
       typed ctxt loc instr (Item_t (union_bytes_bool_t, rest))
+  (* Event emit *)
+  | (Prim (loc, I_EMIT, [], _), Item_t (String_t, Item_t (d, rest))) -> (
+      match tc_context.callsite with
+      | _ when Script_tc_context.is_in_lambda tc_context ->
+          fail
+            (Forbidden_instr_in_context (loc, Script_tc_errors.Lambda, I_EMIT))
+      | Data ->
+          fail
+            (Forbidden_instr_in_context (loc, Script_tc_errors.Lambda, I_EMIT))
+      | View ->
+          fail (Forbidden_instr_in_context (loc, Script_tc_errors.View, I_EMIT))
+      | Toplevel {event_type; _} ->
+          check_item_ty ctxt d event_type loc I_EMIT 1 2 >>?= fun (Eq, ctxt) ->
+          let instr = {apply = (fun kinfo k -> IEmit (kinfo, d, k))} in
+          typed ctxt loc instr rest)
   (* Primitive parsing errors *)
   | ( Prim
         ( loc,
@@ -5176,9 +5224,9 @@ and parse_toplevel :
   | Bytes (loc, _) -> error (Invalid_kind (loc, [Seq_kind], Bytes_kind))
   | Prim (loc, _, _, _) -> error (Invalid_kind (loc, [Seq_kind], Prim_kind))
   | Seq (_, fields) -> (
-      let rec find_fields ctxt p s c views fields =
+      let rec find_fields ctxt p s e c views fields =
         match fields with
-        | [] -> ok (ctxt, (p, s, c, views))
+        | [] -> ok (ctxt, (p, s, e, c, views))
         | Int (loc, _) :: _ -> error (Invalid_kind (loc, [Prim_kind], Int_kind))
         | String (loc, _) :: _ ->
             error (Invalid_kind (loc, [Prim_kind], String_kind))
@@ -5187,16 +5235,20 @@ and parse_toplevel :
         | Seq (loc, _) :: _ -> error (Invalid_kind (loc, [Prim_kind], Seq_kind))
         | Prim (loc, K_parameter, [arg], annot) :: rest -> (
             match p with
-            | None -> find_fields ctxt (Some (arg, loc, annot)) s c views rest
+            | None -> find_fields ctxt (Some (arg, loc, annot)) s e c views rest
             | Some _ -> error (Duplicate_field (loc, K_parameter)))
         | Prim (loc, K_storage, [arg], annot) :: rest -> (
             match s with
-            | None -> find_fields ctxt p (Some (arg, loc, annot)) c views rest
+            | None -> find_fields ctxt p (Some (arg, loc, annot)) e c views rest
             | Some _ -> error (Duplicate_field (loc, K_storage)))
         | Prim (loc, K_code, [arg], annot) :: rest -> (
             match c with
-            | None -> find_fields ctxt p s (Some (arg, loc, annot)) views rest
+            | None -> find_fields ctxt p s e (Some (arg, loc, annot)) views rest
             | Some _ -> error (Duplicate_field (loc, K_code)))
+        | Prim (loc, K_event, [arg], annot) :: rest -> (
+            match c with
+            | None -> find_fields ctxt p s (Some (arg, loc, annot)) c views rest
+            | Some _ -> error (Duplicate_field (loc, K_event)))
         | Prim (loc, ((K_parameter | K_storage | K_code) as name), args, _) :: _
           ->
             error (Invalid_arity (loc, name, 1, List.length args))
@@ -5215,21 +5267,22 @@ and parse_toplevel :
                   (Some {input_ty; output_ty; view_code})
                   views
               in
-              find_fields ctxt p s c views' rest
+              find_fields ctxt p s e c views' rest
         | Prim (loc, K_view, args, _) :: _ ->
             error (Invalid_arity (loc, K_view, 4, List.length args))
         | Prim (loc, name, _, _) :: _ ->
             let allowed = [K_parameter; K_storage; K_code; K_view] in
             error (Invalid_primitive (loc, allowed, name))
       in
-      find_fields ctxt None None None (Script_map.empty string_key) fields
+      find_fields ctxt None None None None (Script_map.empty string_key) fields
       >>? fun (ctxt, toplevel) ->
       match toplevel with
-      | (None, _, _, _) -> error (Missing_field K_parameter)
-      | (Some _, None, _, _) -> error (Missing_field K_storage)
-      | (Some _, Some _, None, _) -> error (Missing_field K_code)
+      | (None, _, _, _, _) -> error (Missing_field K_parameter)
+      | (Some _, None, _, _, _) -> error (Missing_field K_storage)
+      | (Some _, Some _, _, None, _) -> error (Missing_field K_code)
       | ( Some (p, ploc, pannot),
           Some (s, sloc, sannot),
+          e,
           Some (c, cloc, cannot),
           views ) ->
           let p_pannot =
@@ -5250,12 +5303,14 @@ and parse_toplevel :
                     | _ -> (p, []))
                 | _ -> ok (p, pannot))
           in
+          let event_type = Option.map (fun (e, _, _) -> e) e in
           (* only one field annot is allowed to set the root entrypoint name *)
           p_pannot >>? fun (arg_type, pannot) ->
           Script_ir_annot.error_unexpected_annot ploc pannot >>? fun () ->
           Script_ir_annot.error_unexpected_annot cloc cannot >>? fun () ->
           Script_ir_annot.error_unexpected_annot sloc sannot >|? fun () ->
-          ({code_field = c; arg_type; views; storage_type = s}, ctxt))
+          ({code_field = c; arg_type; views; event_type; storage_type = s}, ctxt)
+      )
 
 (* Same as [parse_contract], but does not fail when the contact is missing or
    if the expected type doesn't match the actual one. In that case None is
@@ -5387,7 +5442,7 @@ let parse_code :
   >>?= fun (code, ctxt) ->
   Global_constants_storage.expand ctxt code >>=? fun (ctxt, code) ->
   parse_toplevel ctxt ~legacy code
-  >>?= fun ({arg_type; storage_type; code_field; views}, ctxt) ->
+  >>?= fun ({arg_type; storage_type; event_type; code_field; views}, ctxt) ->
   let arg_type_loc = location arg_type in
   record_trace
     (Ill_formed_type (Some "parameter", code, arg_type_loc))
@@ -5400,12 +5455,22 @@ let parse_code :
   >>?= fun (Ex_ty storage_type, ctxt) ->
   pair_t storage_type_loc arg_type storage_type
   >>?= fun (Ty_ex_c arg_type_full) ->
+  (match event_type with
+  | None -> ok (No_event_ty, Ex_ty Never_t, ctxt)
+  | Some event_type ->
+      let event_type_loc = location event_type in
+      record_trace
+        (Ill_formed_type (Some "event", code, event_type_loc))
+        (parse_event_ty ctxt ~stack_depth:0 ~legacy event_type)
+      >|? fun (Ex_ty ty, ctxt) -> (Some_event_ty ty, Ex_ty ty, ctxt))
+  >>?= fun (maybe_event_type, Ex_ty event_type, ctxt) ->
   pair_t storage_type_loc list_operation_t storage_type
   >>?= fun (Ty_ex_c ret_type_full) ->
   trace
     (Ill_typed_contract (code, []))
     (parse_returning
-       Tc_context.(toplevel ~storage_type ~param_type:arg_type ~entrypoints)
+       Tc_context.(
+         toplevel ~storage_type ~param_type:arg_type ~event_type ~entrypoints)
        ctxt
        ~legacy
        ~stack_depth:0
@@ -5418,7 +5483,16 @@ let parse_code :
     ( code_size ctxt code views >>? fun (code_size, ctxt) ->
       ok
         ( Ex_code
-            (Code {code; arg_type; storage_type; views; entrypoints; code_size}),
+            (Code
+               {
+                 code;
+                 arg_type;
+                 storage_type;
+                 event_type = maybe_event_type;
+                 views;
+                 entrypoints;
+                 code_size;
+               }),
           ctxt ) )
 
 let parse_storage :
@@ -5459,7 +5533,15 @@ let[@coq_axiom_with_reason "gadt"] parse_script :
   parse_code ~legacy ctxt ?type_logger ~code
   >>=? fun ( Ex_code
                (Code
-                 {code; arg_type; storage_type; views; entrypoints; code_size}),
+                 {
+                   code;
+                   arg_type;
+                   storage_type;
+                   views;
+                   entrypoints;
+                   code_size;
+                   event_type;
+                 }),
              ctxt ) ->
   parse_storage
     ?type_logger
@@ -5471,7 +5553,16 @@ let[@coq_axiom_with_reason "gadt"] parse_script :
   >|=? fun (storage, ctxt) ->
   ( Ex_script
       (Script
-         {code_size; code; arg_type; storage; storage_type; views; entrypoints}),
+         {
+           code_size;
+           code;
+           arg_type;
+           storage;
+           storage_type;
+           event_type;
+           views;
+           entrypoints;
+         }),
     ctxt )
 
 let typecheck_code :
@@ -5484,7 +5575,7 @@ let typecheck_code :
   (* Constants need to be expanded or [parse_toplevel] may fail. *)
   Global_constants_storage.expand ctxt code >>=? fun (ctxt, code) ->
   parse_toplevel ctxt ~legacy code
-  >>?= fun ({arg_type; storage_type; code_field; views}, ctxt) ->
+  >>?= fun ({arg_type; storage_type; event_type; code_field; views}, ctxt) ->
   let type_map = ref [] in
   let arg_type_loc = location arg_type in
   record_trace
@@ -5498,6 +5589,14 @@ let typecheck_code :
   >>?= fun (Ex_ty storage_type, ctxt) ->
   pair_t storage_type_loc arg_type storage_type
   >>?= fun (Ty_ex_c arg_type_full) ->
+  (match event_type with
+  | None -> ok (Ex_ty Never_t, ctxt)
+  | Some event_type ->
+      let event_type_loc = location event_type in
+      record_trace
+        (Ill_formed_type (Some "event", code, event_type_loc))
+        (parse_event_ty ctxt ~stack_depth:0 ~legacy event_type))
+  >>?= fun (Ex_ty event_type, ctxt) ->
   pair_t storage_type_loc list_operation_t storage_type
   >>?= fun (Ty_ex_c ret_type_full) ->
   let type_logger loc ~stack_ty_before ~stack_ty_after =
@@ -5506,7 +5605,11 @@ let typecheck_code :
   let type_logger = if show_types then Some type_logger else None in
   let result =
     parse_returning
-      (Tc_context.toplevel ~storage_type ~param_type:arg_type ~entrypoints)
+      (Tc_context.toplevel
+         ~storage_type
+         ~param_type:arg_type
+         ~event_type
+         ~entrypoints)
       ctxt
       ~legacy
       ~stack_depth:0
@@ -6456,6 +6559,7 @@ let script_size
           arg_type = _;
           storage;
           storage_type;
+          event_type = _;
           entrypoints = _;
           views = _;
         })) =

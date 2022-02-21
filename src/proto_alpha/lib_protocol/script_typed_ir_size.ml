@@ -554,7 +554,21 @@ and kinstr_size :
     | ITransfer_tokens (kinfo, _) -> ret_succ_adding accu (base kinfo)
     | IImplicit_account (kinfo, _) -> ret_succ_adding accu (base kinfo)
     | ICreate_contract
-        {kinfo; storage_type; arg_type; lambda; entrypoints; views; k = _} ->
+        {
+          kinfo;
+          storage_type;
+          arg_type;
+          event_type;
+          lambda;
+          entrypoints;
+          views;
+          k = _;
+        } ->
+        let accu =
+          match event_type with
+          | No_event_ty -> accu
+          | Some_event_ty ty -> accu ++ ty_size ty
+        in
         let accu =
           ret_succ_adding
             (accu ++ ty_size storage_type ++ ty_size arg_type
@@ -657,6 +671,7 @@ and kinstr_size :
           (accu ++ comparable_ty_size cty)
           (base kinfo +! word_size)
     | IOpen_chest (kinfo, _) -> ret_succ_adding accu (base kinfo)
+    | IEmit (kinfo, _, _) -> ret_succ_adding accu (base kinfo)
     | IHalt kinfo -> ret_succ_adding accu (h1w +! kinfo_size kinfo)
     | ILog (_, _, _, _) ->
         (* This instruction is ignored because it is only used for testing. *)

@@ -50,6 +50,11 @@ type error += Cannot_serialize_storage
 
 type error += Michelson_too_many_recursive_calls
 
+(** The result from script interpretation.
+
+  Note that [events] is a list of events emitted in a {i:reversed} chronological order.
+  Consumers of this struct should reverse the [events] list before interpreting it.
+  *)
 type execution_result = {
   script : Script_ir_translator.ex_script;
   code_size : int;
@@ -57,6 +62,7 @@ type execution_result = {
   lazy_storage_diff : Lazy_storage.diffs option;
   operations : packed_internal_operation list;
   ticket_diffs : Z.t Ticket_token_map.t;
+  events : Contract_event.log;
 }
 
 type step_constants = Script_typed_ir.step_constants = {
@@ -77,7 +83,7 @@ val step :
   ('a, 's, 'r, 'f) Script_typed_ir.kdescr ->
   'a ->
   's ->
-  ('r * 'f * context) tzresult Lwt.t
+  ('r * 'f * context * Contract_event.log) tzresult Lwt.t
 
 (** [execute ?logger ctxt ~cached_script mode step_constant ~script
    ~entrypoint ~parameter ~internal] interprets the [script]'s
@@ -177,7 +183,8 @@ module Internals : sig
     ('r
     * 'f
     * Local_gas_counter.outdated_context
-    * Local_gas_counter.local_gas_counter)
+    * Local_gas_counter.local_gas_counter
+    * Contract_event.log)
     tzresult
     Lwt.t
 
@@ -190,7 +197,8 @@ module Internals : sig
     ('r
     * 'f
     * Local_gas_counter.outdated_context
-    * Local_gas_counter.local_gas_counter)
+    * Local_gas_counter.local_gas_counter
+    * Contract_event.log)
     tzresult
     Lwt.t
 end

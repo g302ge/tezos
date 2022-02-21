@@ -176,6 +176,7 @@ in the :ref:`introduction <howtoget>`.
    :caption: Alpha Development Protocol doc:
 
    alpha/protocol
+   alpha/event
    alpha/glossary
    alpha/cli-commands
    alpha/rpc

@@ -828,6 +828,7 @@ let apply_transaction_to_implicit ~ctxt ~contract ~parameter ~entrypoint
            storage_size = Z.zero;
            paid_storage_size_diff = Z.zero;
            allocated_destination_contract;
+           events = [];
          })
   in
   (ctxt, result)
@@ -875,6 +876,7 @@ let apply_transaction_to_smart_contract ~ctxt ~source ~contract ~amount
                lazy_storage_diff;
                operations;
                ticket_diffs;
+               events;
              },
              ctxt ) ->
   update_script_storage_and_ticket_balances
@@ -908,6 +910,7 @@ let apply_transaction_to_smart_contract ~ctxt ~source ~contract ~amount
                storage_size = new_size;
                paid_storage_size_diff;
                allocated_destination_contract;
+               events = List.rev events;
              })
       in
       (ctxt, result, operations) )
@@ -1960,18 +1963,7 @@ let burn_storage_fees :
         ( ctxt,
           storage_limit,
           Transaction_result
-            (Transaction_to_contract_result
-               {
-                 storage = payload.storage;
-                 lazy_storage_diff = payload.lazy_storage_diff;
-                 balance_updates;
-                 originated_contracts = payload.originated_contracts;
-                 consumed_gas = payload.consumed_gas;
-                 storage_size = payload.storage_size;
-                 paid_storage_size_diff = payload.paid_storage_size_diff;
-                 allocated_destination_contract =
-                   payload.allocated_destination_contract;
-               }) )
+            (Transaction_to_contract_result {payload with balance_updates}) )
   | Transaction_result (Transaction_to_tx_rollup_result _ as payload) ->
       (* TODO: https://gitlab.com/tezos/tezos/-/issues/2339
           We need to charge for newly allocated storage (as we do for
@@ -3102,6 +3094,7 @@ let apply_liquidity_baking_subsidy ctxt ~toggle_vote =
                         lazy_storage_diff;
                         operations;
                         ticket_diffs;
+                        events;
                       },
                       ctxt ) ->
            match operations with
@@ -3150,6 +3143,7 @@ let apply_liquidity_baking_subsidy ctxt ~toggle_vote =
                         storage_size = new_size;
                         paid_storage_size_diff;
                         allocated_destination_contract = false;
+                        events = List.rev events;
                       })
                in
                let ctxt = Gas.set_unlimited ctxt in

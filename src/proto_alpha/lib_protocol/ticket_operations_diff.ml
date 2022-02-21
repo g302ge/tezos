@@ -230,6 +230,7 @@ let tickets_of_origination ctxt ~preorigination
         views = _;
         entrypoints = _;
         code_size = _;
+        event_type = _;
       }) =
   (* Extract any tickets from the storage. Note that if the type of the contract
      storage does not contain tickets, storage is not scanned. *)

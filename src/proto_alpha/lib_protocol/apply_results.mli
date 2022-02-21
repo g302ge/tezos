@@ -145,6 +145,7 @@ and successful_transaction_result =
       storage_size : Z.t;
       paid_storage_size_diff : Z.t;
       allocated_destination_contract : bool;
+      events : Contract_event.log;
     }
   (* TODO: https://gitlab.com/tezos/tezos/-/issues/2339
      Storage fees for transaction rollup.

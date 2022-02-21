@@ -519,6 +519,7 @@ module Script : sig
     | K_storage
     | K_code
     | K_view
+    | K_event
     | D_False
     | D_Elt
     | D_Left
@@ -631,6 +632,7 @@ module Script : sig
     | I_SPLIT_TICKET
     | I_JOIN_TICKETS
     | I_OPEN_CHEST
+    | I_EMIT
     | T_bool
     | T_contract
     | T_int
@@ -2104,6 +2106,20 @@ module Destination : sig
   val in_memory_size : t -> Cache_memory_helpers.sint
 
   type error += Invalid_destination_b58check of string
+end
+
+(** Contract_event exposes fields for event data access. See [Contract_event_repr]. *)
+module Contract_event : sig
+  type t = {
+    emitter : Contract.t;
+    payer : Contract.t;
+    tag : string;
+    data : Script.expr;
+  }
+
+  type log = t list
+
+  val encoding : t Data_encoding.t
 end
 
 module Receipt : sig
