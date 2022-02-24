@@ -2058,22 +2058,9 @@ module Tx_rollup_message : sig
     amount : Tx_rollup_l2_qty.t;
   }
 
-  type t = private Batch of string | Deposit of deposit
+  type t = Batch of string | Deposit of deposit
 
-  (** [make_batch batch] creates a new [Batch] message to be added that can be
-      added to an inbox, along with its size in bytes. See
-      {!Tx_rollup_message_repr.size}. *)
-  val make_batch : string -> t * int
-
-  (** [make_deposit destination ticket_hash qty] creates a new
-      [Deposit] message to be added that can be added to an inbox,
-      along with its size in bytes. See
-      {!Tx_rollup_message_repr.size}. *)
-  val make_deposit :
-    Tx_rollup_l2_address.t Indexable.value ->
-    Ticket_hash.t ->
-    Tx_rollup_l2_qty.t ->
-    t * int
+  val size : t -> int
 
   val encoding : t Data_encoding.t
 

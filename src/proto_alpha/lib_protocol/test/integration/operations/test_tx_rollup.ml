@@ -88,7 +88,7 @@ let burn_per_byte state = inbox_burn state 1
 let check_batch_in_inbox :
     t -> Tx_rollup_inbox.t -> int -> string -> unit tzresult Lwt.t =
  fun ctxt inbox n expected ->
-  let (expected_batch, _) = Tx_rollup_message.make_batch expected in
+  let expected_batch = Tx_rollup_message.(Batch expected) in
   Environment.wrap_tzresult (Tx_rollup_message.hash ctxt expected_batch)
   >>?= fun (_ctxt, expected_hash) ->
   match List.nth inbox.contents n with
@@ -580,11 +580,14 @@ let test_valid_deposit () =
   Context.Tx_rollup.inbox (B b) tx_rollup >>=? function
   | {contents = [hash]; _} ->
       let ticket_hash = make_unit_ticket_key ctxt contract tx_rollup in
-      let (message, _size) =
-        Tx_rollup_message.make_deposit
-          (Tx_rollup_l2_address.Indexable.value pkh)
-          ticket_hash
-          (Tx_rollup_l2_qty.of_int64_exn 10L)
+      let message =
+        Tx_rollup_message.(
+          Deposit
+            {
+              destination = Tx_rollup_l2_address.Indexable.value pkh;
+              ticket_hash;
+              amount = Tx_rollup_l2_qty.of_int64_exn 10L;
+            })
       in
       Environment.wrap_tzresult (Tx_rollup_message.hash ctxt message)
       >>?= fun (_ctxt, expected) ->

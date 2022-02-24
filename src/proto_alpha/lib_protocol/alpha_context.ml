@@ -260,13 +260,6 @@ end
 module Tx_rollup_message = struct
   include Tx_rollup_message_repr
   include Tx_rollup_message_builder
-
-  let make_message msg = (msg, size msg)
-
-  let make_batch string = make_message @@ Batch string
-
-  let make_deposit destination ticket_hash amount =
-    make_message @@ Deposit {destination; ticket_hash; amount}
 end
 
 module Tx_rollup_inbox = struct

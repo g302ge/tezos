@@ -841,11 +841,12 @@ let test_apply_message_batch () =
       [(pk1, addr2, ticket1, 10L, None); (pk2, addr1, ticket2, 20L, None)]
   in
   let batch = create_batch_v1 [transaction] [[sk1; sk2]] in
-  let (msg, _) =
-    Tx_rollup_message.make_batch
-      (Data_encoding.Binary.to_string_exn
-         Tx_rollup_l2_batch.encoding
-         (V1 batch))
+  let msg =
+    Tx_rollup_message.(
+      Batch
+        (Data_encoding.Binary.to_string_exn
+           Tx_rollup_l2_batch.encoding
+           (V1 batch)))
   in
 
   let* (_ctxt, result) = apply_message ctxt msg in
@@ -862,11 +863,14 @@ let test_apply_message_deposit () =
   let ctxt = empty_context in
   let amount = 50L in
 
-  let (msg, _) =
-    Tx_rollup_message.make_deposit
-      (value addr1)
-      ticket1
-      (Tx_rollup_l2_qty.of_int64_exn amount)
+  let msg =
+    Tx_rollup_message.(
+      Deposit
+        {
+          destination = value addr1;
+          ticket_hash = ticket1;
+          amount = Tx_rollup_l2_qty.of_int64_exn amount;
+        })
   in
 
   let* (_ctxt, result) = apply_message ctxt msg in

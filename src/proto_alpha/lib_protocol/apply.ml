@@ -1063,9 +1063,10 @@ let apply_manager_operation_content :
           ->
         Tx_rollup.hash_ticket ctxt dst ~contents ~ticketer ~ty
         >>?= fun (ticket_hash, ctxt) ->
-        let (deposit, message_size) =
-          Tx_rollup_message.make_deposit destination ticket_hash amount
+        let deposit =
+          Tx_rollup_message.(Deposit {destination; ticket_hash; amount})
         in
+        let message_size = Tx_rollup_message.size deposit in
         Tx_rollup_state.get ctxt dst >>=? fun (ctxt, state) ->
         Tx_rollup_state.burn ~limit:None state message_size >>?= fun cost ->
         Token.transfer ctxt (`Contract payer) `Burned cost
@@ -1258,7 +1259,8 @@ let apply_manager_operation_content :
       return (ctxt, result, [])
   | Tx_rollup_submit_batch {tx_rollup; content; burn_limit} ->
       assert_tx_rollup_feature_enabled ctxt >>=? fun () ->
-      let (message, message_size) = Tx_rollup_message.make_batch content in
+      let message = Tx_rollup_message.(Batch content) in
+      let message_size = Tx_rollup_message.size message in
       Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
       Tx_rollup_state.burn ~limit:burn_limit state message_size >>?= fun cost ->
       Token.transfer ctxt (`Contract source) `Burned cost
@@ -1479,7 +1481,7 @@ let precheck_manager_contents (type kind) ctxt (op : kind Kind.manager contents)
       let size_limit =
         Alpha_context.Constants.tx_rollup_hard_size_limit_per_message ctxt
       in
-      let (_message, message_size) = Tx_rollup_message.make_batch content in
+      let message_size = Tx_rollup_message.size (Batch content) in
       Tx_rollup_gas.message_hash_cost message_size >>?= fun cost ->
       Alpha_context.Gas.consume ctxt cost >>?= fun ctxt ->
       fail_unless

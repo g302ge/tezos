@@ -34,7 +34,7 @@ let messages_to_inbox messages =
   let cumulated_size =
     List.fold_left (fun acc x -> acc + String.length x) 0 messages
   in
-  let make_batch msg = fst @@ Tx_rollup_message.make_batch msg in
+  let make_batch msg = Tx_rollup_message.(Batch msg) in
   let contents = List.map make_batch messages in
   let hash = Tx_rollup_inbox.hash_inbox contents in
   Inbox.{contents; cumulated_size; hash}
