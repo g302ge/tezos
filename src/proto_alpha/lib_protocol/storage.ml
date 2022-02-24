@@ -1386,6 +1386,19 @@ module Tx_rollup = struct
          end))
          (Make_index (Tx_rollup_repr.Index))
 
+  (* A module to store data indexed by an inbox level. *)
+  module Inbox_level_index = Make_index (Tx_rollup_level_repr.Index)
+
+  (* Map for each rollow, an inbox level with a raw level. *)
+  module Inbox_level =
+    Make_indexed_carbonated_data_storage
+      (Make_subcontext (Registered) (Indexed_context.Raw_context)
+         (struct
+           let name = ["inbox_level"]
+         end))
+         (Inbox_level_index)
+      (Raw_level_repr)
+
   module State =
     Indexed_context.Make_carbonated_map
       (struct

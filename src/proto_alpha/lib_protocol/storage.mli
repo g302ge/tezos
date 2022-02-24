@@ -593,6 +593,15 @@ module Tx_rollup : sig
        and type value = Tx_rollup_state_repr.t
        and type t := Raw_context.t
 
+  (** For each rollup, we store the mapping between an [inbox_level]
+     and the raw level. In other words, for each inbox, we map the
+     inbox level to the block level this inbox is associated with. *)
+  module Inbox_level :
+    Non_iterable_indexed_carbonated_data_storage
+      with type t := Raw_context.t * Tx_rollup_repr.t
+       and type key = Tx_rollup_level_repr.t
+       and type value = Raw_level_repr.t
+
   (** The number of bytes allocated by the messages stored in each inbox,
       as well as its predecessor and successor. *)
   module Inbox_metadata :
