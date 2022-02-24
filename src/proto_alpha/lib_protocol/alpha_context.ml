@@ -270,6 +270,11 @@ module Tx_rollup_inbox = struct
   include Tx_rollup_inbox_repr
   include Tx_rollup_inbox_storage
 
+  module Metadata = struct
+    include Tx_rollup_inbox_repr.Metadata
+    include Tx_rollup_inbox_storage.Metadata
+  end
+
   module Internal_for_tests = struct
     include Tx_rollup_inbox_repr
     include Tx_rollup_inbox_storage

@@ -103,3 +103,11 @@ type metadata = {
 val metadata_encoding : metadata Data_encoding.t
 
 val empty_metadata : Raw_level_repr.t option -> metadata
+
+module Metadata : sig
+  type t = {inbox_length : int32; cumulated_size : int; hash : hash}
+
+  val encoding : t Data_encoding.t
+
+  val empty : t
+end

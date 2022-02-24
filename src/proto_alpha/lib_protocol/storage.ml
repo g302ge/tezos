@@ -1414,11 +1414,27 @@ module Tx_rollup = struct
          end))
          (Make_index (Raw_level_repr.Index))
 
+  module Inbox_level_context =
+    Make_indexed_subcontext
+      (Make_subcontext (Registered) (Raw_context)
+         (struct
+           let name = ["inbox_level_index"]
+         end))
+         (Inbox_level_index)
+
   module Level_tx_rollup_context =
     Make_indexed_subcontext
       (Make_subcontext (Registered) (Level_context.Raw_context)
          (struct
            let name = ["tx_rollup_index"]
+         end))
+         (Make_index (Tx_rollup_repr.Index))
+
+  module Inbox_level_tx_rollup_context =
+    Make_indexed_subcontext
+      (Make_subcontext (Registered) (Inbox_level_context.Raw_context)
+         (struct
+           let name = ["tx_rollup_inbox_index"]
          end))
          (Make_index (Tx_rollup_repr.Index))
 
@@ -1434,6 +1450,17 @@ module Tx_rollup = struct
         type t = Tx_rollup_inbox_repr.metadata
 
         let encoding = Tx_rollup_inbox_repr.metadata_encoding
+      end)
+
+  module Inbox_metadata_bis =
+    Inbox_level_tx_rollup_context.Make_carbonated_map
+      (struct
+        let name = ["inbox_size_bis"]
+      end)
+      (struct
+        type t = Tx_rollup_inbox_repr.Metadata.t
+
+        let encoding = Tx_rollup_inbox_repr.Metadata.encoding
       end)
 
   module Message_index = struct

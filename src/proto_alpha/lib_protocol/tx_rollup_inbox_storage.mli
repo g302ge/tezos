@@ -146,3 +146,12 @@ val get_metadata :
   Raw_level_repr.t ->
   Tx_rollup_repr.t ->
   (Raw_context.t * Tx_rollup_inbox_repr.metadata) tzresult Lwt.t
+
+module Metadata : sig
+  val find :
+    Raw_context.t ->
+    Tx_rollup_repr.t ->
+    Tx_rollup_level_repr.t ->
+    default:Tx_rollup_inbox_repr.Metadata.t ->
+    (Raw_context.t * Tx_rollup_inbox_repr.Metadata.t) tzresult Lwt.t
+end

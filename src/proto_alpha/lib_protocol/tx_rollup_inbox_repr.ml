@@ -136,3 +136,26 @@ let empty_metadata predecessor =
     successor = None;
     hash = Inbox_hash.hash_bytes [Bytes.make hash_size @@ Char.chr 0];
   }
+
+module Metadata = struct
+  type t = {inbox_length : int32; cumulated_size : int; hash : hash}
+
+  let encoding =
+    let open Data_encoding in
+    conv
+      (fun {inbox_length; cumulated_size; hash} ->
+        (inbox_length, cumulated_size, hash))
+      (fun (inbox_length, cumulated_size, hash) ->
+        {inbox_length; cumulated_size; hash})
+      (obj3
+         (req "inbox_length" int32)
+         (req "cumulated_size" int31)
+         (req "hash" hash_encoding))
+
+  let empty =
+    {
+      inbox_length = 0l;
+      cumulated_size = 0;
+      hash = Inbox_hash.hash_bytes [Bytes.make hash_size @@ Char.chr 0];
+    }
+end

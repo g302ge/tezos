@@ -610,6 +610,13 @@ module Tx_rollup : sig
        and type key = Tx_rollup_repr.t
        and type value = Tx_rollup_inbox_repr.metadata
 
+  (** Associate to each inbox level a metadata for the inbox. *)
+  module Inbox_metadata_bis :
+    Non_iterable_indexed_carbonated_data_storage
+      with type t := Raw_context.t * Tx_rollup_level_repr.t
+       and type key = Tx_rollup_repr.t
+       and type value = Tx_rollup_inbox_repr.Metadata.t
+
   (** A carbonated storage to store the hashes of the messages
       appended in an inbox. The key is the batch number, which is
       sequentially assigned from 0.

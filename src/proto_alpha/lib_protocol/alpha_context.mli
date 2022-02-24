@@ -2164,6 +2164,19 @@ module Tx_rollup_inbox : sig
     Tx_rollup.t ->
     (context * Raw_level.t option * Raw_level.t option) tzresult Lwt.t
 
+  module Metadata : sig
+    type t = {inbox_length : int32; cumulated_size : int; hash : hash}
+
+    val empty : t
+
+    val find :
+      context ->
+      Tx_rollup.t ->
+      Tx_rollup_level.t ->
+      default:t ->
+      (context * t) tzresult Lwt.t
+  end
+
   module Internal_for_tests : sig
     type metadata = {
       inbox_length : int32;

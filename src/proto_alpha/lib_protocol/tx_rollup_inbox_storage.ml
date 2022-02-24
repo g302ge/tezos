@@ -255,6 +255,13 @@ let get_metadata :
   | (_, None) -> fail (Tx_rollup_inbox_does_not_exist (tx_rollup, level))
   | (ctxt, Some metadata) -> return (ctxt, metadata)
 
+module Metadata = struct
+  let find ctxt tx_rollup inbox_level ~default =
+    Storage.Tx_rollup.Inbox_metadata_bis.find (ctxt, inbox_level) tx_rollup
+    >>=? fun (ctxt, metadata_opt) ->
+    return (ctxt, Option.value metadata_opt ~default)
+end
+
 (* Error registration *)
 
 let () =
