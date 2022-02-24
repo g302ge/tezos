@@ -70,9 +70,16 @@ val burn : burn_limit:Tez_repr.t option -> t -> int -> Tez_repr.t tzresult
    non-empty inboxes. *)
 val last_inbox_raw_level : t -> Raw_level_repr.t option
 
-(** [append_inbox state level] updates the newest inbox field for a
-    [state] when messages have been added at a level. *)
-val append_inbox : t -> Raw_level_repr.t -> t
+(** [last_inbox_level state ~default] returns the last inbox level for which
+   any messages have been submitted, or [default] if there is no
+   non-empty inboxes. *)
+val last_inbox_level :
+  t -> default:Tx_rollup_level_repr.t -> Tx_rollup_level_repr.t
+
+(** [bump_inbox_level state raw_level] bump the new inbox
+   level. [raw_level] is the expected raw level that contains the new
+   inbox. *)
+val bump_inbox_level : t -> Raw_level_repr.t -> t
 
 (** [unfinalized_level_count state] returns the number of unfinalized
     levels of the rollup.  If this is too high, we stop appending

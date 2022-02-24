@@ -46,6 +46,13 @@ type error +=
     significance on the most N data points. The purpose of [inbox_ema]
     is to get lessened volatility of burn, that is more resistant to
     spurious spikes of [burn_per_byte].
+
+    [last_inbox_level] is the most recent inbox level which contains at 
+    least one message. Notice that this field can be set to [None] during 
+    the lifetime of the rollup. This may happen if all the commitments 
+    associated to inboxes are finalized and no new inboxes are created.
+
+    [inbox_level_counter] is just a counter for the level of inboxes.
 *)
 type t = {
   first_unfinalized_level : Raw_level_repr.t option;
@@ -53,6 +60,8 @@ type t = {
   burn_per_byte : Tez_repr.t;
   inbox_ema : int;
   last_inbox_raw_level : Raw_level_repr.t option;
+  last_inbox_level : Tx_rollup_level_repr.t option;
+  inbox_level_counter : Tx_rollup_level_repr.t;
 }
 
 let initial_state =
@@ -62,6 +71,8 @@ let initial_state =
     burn_per_byte = Tez_repr.zero;
     inbox_ema = 0;
     last_inbox_raw_level = None;
+    inbox_level_counter = Tx_rollup_level_repr.root;
+    last_inbox_level = None;
   }
 
 let encoding : t Data_encoding.t =
@@ -73,30 +84,40 @@ let encoding : t Data_encoding.t =
            burn_per_byte;
            inbox_ema;
            last_inbox_raw_level;
+           inbox_level_counter;
+           last_inbox_level;
          } ->
       ( first_unfinalized_level,
         unfinalized_level_count,
         burn_per_byte,
         inbox_ema,
-        last_inbox_raw_level ))
+        last_inbox_raw_level,
+        inbox_level_counter,
+        last_inbox_level ))
     (fun ( first_unfinalized_level,
            unfinalized_level_count,
            burn_per_byte,
            inbox_ema,
-           last_inbox_raw_level ) ->
+           last_inbox_raw_level,
+           inbox_level_counter,
+           last_inbox_level ) ->
       {
         first_unfinalized_level;
         unfinalized_level_count;
         burn_per_byte;
         inbox_ema;
         last_inbox_raw_level;
+        inbox_level_counter;
+        last_inbox_level;
       })
-    (obj5
+    (obj7
        (req "first_unfinalized_level" (option Raw_level_repr.encoding))
        (req "unfinalized_level_count" int16)
        (req "burn_per_byte" Tez_repr.encoding)
        (req "inbox_ema" int31)
        (req "last_inbox_raw_level" (option Raw_level_repr.encoding))
+       (req "inbox_level_counter" Tx_rollup_level_repr.encoding)
+       (req "last_inbox_level" (option Tx_rollup_level_repr.encoding)))
 
 let pp fmt
     {
@@ -105,11 +126,14 @@ let pp fmt
       burn_per_byte;
       inbox_ema;
       last_inbox_raw_level;
+      inbox_level_counter;
+      last_inbox_level;
     } =
   Format.fprintf
     fmt
     "first_unfinalized_level: %a unfinalized_level_count: %d cost_per_byte: %a \
-     inbox_ema: %d newest inbox: %a"
+     inbox_ema: %d newest inbox: %a inbox_level_counter: %a last_inbox_level: \
+     %a"
     (Format.pp_print_option Raw_level_repr.pp)
     first_unfinalized_level
     unfinalized_level_count
@@ -118,6 +142,10 @@ let pp fmt
     inbox_ema
     (Format.pp_print_option Raw_level_repr.pp)
     last_inbox_raw_level
+    Tx_rollup_level_repr.pp
+    inbox_level_counter
+    (Format.pp_print_option Tx_rollup_level_repr.pp)
+    last_inbox_level
 
 let update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t =
  fun ({burn_per_byte; inbox_ema; _} as state) ~final_size ~hard_limit ->
@@ -172,13 +200,21 @@ let burn {burn_per_byte; _} size = Tez_repr.(burn_per_byte *? Int64.of_int size)
 
 let last_inbox_raw_level {last_inbox_raw_level; _} = last_inbox_raw_level
 
-let append_inbox t raw_level =
+let last_inbox_level {last_inbox_level; _} ~default =
+  match last_inbox_level with
+  | None -> default
+  | Some last_inbox_level -> last_inbox_level
+
+let bump_inbox_level t current_raw_level =
   {
-    t with
-    last_inbox_raw_level = Some raw_level;
+    inbox_ema = t.inbox_ema;
+    burn_per_byte = t.burn_per_byte;
+    last_inbox_raw_level = Some current_raw_level;
     first_unfinalized_level =
-      Some (Option.value ~default:raw_level t.first_unfinalized_level);
+      Some (Option.value ~default:current_raw_level t.first_unfinalized_level);
     unfinalized_level_count = t.unfinalized_level_count + 1;
+    inbox_level_counter = Tx_rollup_level_repr.succ t.inbox_level_counter;
+    last_inbox_level = Some t.inbox_level_counter;
   }
 
 let unfinalized_level_count {unfinalized_level_count; _} =
@@ -187,11 +223,18 @@ let unfinalized_level_count {unfinalized_level_count; _} =
 let first_unfinalized_level {first_unfinalized_level; _} =
   first_unfinalized_level
 
-let update_after_finalize state level count =
+let update_after_finalize t level_opt count =
+  let last_inbox_to_finalize = Option.is_none level_opt in
   {
-    state with
-    first_unfinalized_level = level;
-    unfinalized_level_count = state.unfinalized_level_count - count;
+    inbox_ema = t.inbox_ema;
+    burn_per_byte = t.burn_per_byte;
+    last_inbox_raw_level =
+      (if last_inbox_to_finalize then None else t.last_inbox_raw_level);
+    first_unfinalized_level = level_opt;
+    unfinalized_level_count = t.unfinalized_level_count - count;
+    inbox_level_counter = t.inbox_level_counter;
+    last_inbox_level =
+      (if last_inbox_to_finalize then None else t.last_inbox_level);
   }
 
 let burn ~burn_limit state size =
@@ -238,6 +281,8 @@ module Internal_for_tests = struct
       burn_per_byte;
       inbox_ema;
       last_inbox_raw_level;
+      last_inbox_level = None;
+      inbox_level_counter = Tx_rollup_level_repr.root;
       first_unfinalized_level = None;
       unfinalized_level_count = 0;
     }
