@@ -1261,20 +1261,69 @@ let apply_manager_operation_content :
       assert_tx_rollup_feature_enabled ctxt >>=? fun () ->
       let message = Tx_rollup_message.(Batch content) in
       let message_size = Tx_rollup_message.size message in
-      (* FIXME: We unplug this code to better use the new
-         abstraction. This comment will be removed in a later commit
-         when everything will be plugged on. *)
-      ( Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
-        Tx_rollup_state.burn ~limit:burn_limit state message_size
-        >>?= fun cost ->
-        Token.transfer ctxt (`Contract source) `Burned cost
-        >>=? fun (ctxt, balance_updates) ->
-        Tx_rollup_inbox.append_message ctxt tx_rollup state message
-        >>=? fun (ctxt, state) ->
-        Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
-        ignore ctxt ;
-        return balance_updates )
-      >>=? fun balance_updates ->
+
+      (* We implement below some pseudo_code that will be refine one
+         by one in further commit that implement the semantics of this
+         operation. *)
+      (* First we register hooks that will be instantiated later on. *)
+      let get_state _ctxt _tx_rollup = assert false in
+      let burn ~burn_limit:_ _state = assert false in
+      let hash_message _message = assert false in
+      let fresh_metadata _inbox_level = assert false in
+      let find_metadata _ctxt ~default:_ _inbox_level = assert false in
+      let update_metadata _metadata _message_size _message_hash =
+        assert false
+      in
+      let root = assert false in
+      let last_inbox_raw_level _state = assert false in
+      let last_inbox_level _state ~default:_ = assert false in
+      let check_inbox_size _ctxt _metadata = assert false in
+      let update_inbox _ctxt _inbox_level _message _metadata = assert false in
+      let check_inbox_progress_limit _ctxt _state = assert false in
+      (* The semantics for the execution of a batch submission is the
+         following one:
+
+         1. The rollup handle an ad-hoc burn fees mechanism to prevent
+         spaming attacks. The burn cost depends on the filling of the
+         rollup for the last blocks. If the burn cost is superior to
+         what the limit provided by the source of the operation, the
+         execution fails.
+
+         2. We check whether this is the first message for this
+         level. If it is, a new inbox is created.
+
+         3. We ensure there is still room in the inbox to put the new
+         message.
+
+         The size limit of the message is handled by the
+         {precheck_manager_content} function. *)
+      get_state ctxt tx_rollup >>=? fun (ctxt, state) ->
+      burn ~burn_limit state >>?= fun cost ->
+      Token.transfer ctxt (`Contract source) `Burned cost
+      >>=? fun (ctxt, balance_updates) ->
+      let last_inbox_raw_level = last_inbox_raw_level state in
+      let current_raw_level = (Level.current ctxt).level in
+      let first_inbox_message =
+        match last_inbox_raw_level with
+        | None -> true
+        | Some last_inbox_raw_level
+          when Raw_level.(last_inbox_raw_level < current_raw_level) ->
+            true
+        | Some _ -> false
+      in
+      (if first_inbox_message then
+       check_inbox_progress_limit ctxt state >>?= fun () ->
+       Tx_rollup_state.bump_inbox_level ctxt tx_rollup state >>=? fun ctxt ->
+       return ctxt
+      else return ctxt)
+      >>=? fun ctxt ->
+      let inbox_level = last_inbox_level ~default:root state in
+      find_metadata ctxt ~default:fresh_metadata inbox_level
+      >>=? fun (ctxt, metadata) ->
+      let message_hash = hash_message message in
+      let new_metadata = update_metadata metadata message_size message_hash in
+      check_inbox_size ctxt new_metadata >>?= fun () ->
+      update_inbox ctxt inbox_level message new_metadata >>=? fun ctxt ->
       let result =
         Tx_rollup_submit_batch_result
           {
