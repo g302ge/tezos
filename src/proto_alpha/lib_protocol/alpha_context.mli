@@ -2024,7 +2024,7 @@ module Tx_rollup_state : sig
 
   val update : context -> Tx_rollup.t -> t -> context tzresult Lwt.t
 
-  val burn : limit:Tez.t option -> t -> int -> Tez.t tzresult
+  val burn : burn_limit:Tez.t option -> t -> int -> Tez.t tzresult
 
   val assert_exist : context -> Tx_rollup.t -> context tzresult Lwt.t
 

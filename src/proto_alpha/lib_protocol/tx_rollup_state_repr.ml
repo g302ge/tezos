@@ -194,10 +194,10 @@ let update_after_finalize state level count =
     unfinalized_level_count = state.unfinalized_level_count - count;
   }
 
-let burn ~limit state size =
+let burn ~burn_limit state size =
   burn state size >>? fun burn ->
-  match limit with
-  | Some limit when Tez_repr.(limit >= burn) ->
+  match burn_limit with
+  | Some limit when Tez_repr.(limit > burn) ->
       error (Tx_rollup_submit_batch_burn_excedeed {burn; limit})
   | _ -> ok burn
 

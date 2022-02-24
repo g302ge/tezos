@@ -57,13 +57,13 @@ val pp : Format.formatter -> t -> unit
     transaction rollup in case it becomes too intense. *)
 val update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t
 
-(** [burn ~limit state size] computes the burn to be paid to submit [size]
-    bytes in the inbox of the transactional rollup.
+(** [burn ~burn_limit state size] computes the cost associated to the
+   sbumission of a message of [size] bytes in the inbox in the current
+   [state].
 
-    Returns [Tx_rollup_submit_batch_burn_excedeed] if the (computed) burn
-    exceeds [limit].
-*)
-val burn : limit:Tez_repr.t option -> t -> int -> Tez_repr.t tzresult
+    Fails with [Tx_rollup_submit_batch_burn_excedeed] if the (computed)
+   burn exceeds strictly [burn_limit] or if an overflow is reached.  *)
+val burn : burn_limit:Tez_repr.t option -> t -> int -> Tez_repr.t tzresult
 
 (** [last_inbox_raw_level state] returns the last raw level for which
    any messages have been submitted, or [None] if there is no

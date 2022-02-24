@@ -1068,7 +1068,8 @@ let apply_manager_operation_content :
         in
         let message_size = Tx_rollup_message.size deposit in
         Tx_rollup_state.get ctxt dst >>=? fun (ctxt, state) ->
-        Tx_rollup_state.burn ~limit:None state message_size >>?= fun cost ->
+        Tx_rollup_state.burn ~burn_limit:None state message_size
+        >>?= fun cost ->
         Token.transfer ctxt (`Contract payer) `Burned cost
         >>=? fun (ctxt, balance_updates) ->
         Tx_rollup_inbox.append_message ctxt dst state deposit
@@ -1266,7 +1267,6 @@ let apply_manager_operation_content :
          by one in further commit that implement the semantics of this
          operation. *)
       (* First we register hooks that will be instantiated later on. *)
-      let burn ~burn_limit:_ _state = assert false in
       let hash_message _message = assert false in
       let fresh_metadata _inbox_level = assert false in
       let find_metadata _ctxt ~default:_ _inbox_level = assert false in
@@ -1297,7 +1297,7 @@ let apply_manager_operation_content :
          The size limit of the message is handled by the
          {precheck_manager_content} function. *)
       Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
-      burn ~burn_limit state >>?= fun cost ->
+      Tx_rollup_state.burn ~burn_limit state message_size >>?= fun cost ->
       Token.transfer ctxt (`Contract source) `Burned cost
       >>=? fun (ctxt, balance_updates) ->
       let last_inbox_raw_level = last_inbox_raw_level state in
