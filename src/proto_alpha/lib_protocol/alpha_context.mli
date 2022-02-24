@@ -2007,6 +2007,12 @@ module Tx_rollup : sig
   end
 end
 
+module Tx_rollup_level : sig
+  type t
+
+  val root : t
+end
+
 (** This module re-exports definitions from {!Tx_rollup_state_repr}
     and {!Tx_rollup_state_storage}. *)
 module Tx_rollup_state : sig
@@ -2029,6 +2035,8 @@ module Tx_rollup_state : sig
   val assert_exist : context -> Tx_rollup.t -> context tzresult Lwt.t
 
   val last_inbox_raw_level : t -> Raw_level.t option
+
+  val last_inbox_level : t -> default:Tx_rollup_level.t -> Tx_rollup_level.t
 
   val first_unfinalized_level :
     context -> Tx_rollup.t -> (context * Raw_level.t option) tzresult Lwt.t

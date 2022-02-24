@@ -1273,8 +1273,6 @@ let apply_manager_operation_content :
       let update_metadata _metadata _message_size _message_hash =
         assert false
       in
-      let root = assert false in
-      let last_inbox_level _state ~default:_ = assert false in
       let check_inbox_size _ctxt _metadata = assert false in
       let update_inbox _ctxt _inbox_level _message _metadata = assert false in
       let check_inbox_progress_limit _ctxt _state = assert false in
@@ -1314,7 +1312,12 @@ let apply_manager_operation_content :
        Tx_rollup_state.bump_inbox_level ctxt tx_rollup state
       else return (ctxt, state))
       >>=? fun (ctxt, state) ->
-      let inbox_level = last_inbox_level ~default:root state in
+      (* The [default] value will not be used because if there is no
+         inbox, we created one. Not sure we can use the type system to
+         guarantee that invariant easily. *)
+      let inbox_level =
+        Tx_rollup_state.last_inbox_level ~default:Tx_rollup_level.root state
+      in
       find_metadata ctxt ~default:fresh_metadata inbox_level
       >>=? fun (ctxt, metadata) ->
       let message_hash = hash_message message in

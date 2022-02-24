@@ -247,6 +247,10 @@ module Tx_rollup = struct
   module Internal_for_tests = Tx_rollup_repr
 end
 
+module Tx_rollup_level = struct
+  include Tx_rollup_level_repr
+end
+
 module Tx_rollup_state = struct
   include Tx_rollup_state_repr
   include Tx_rollup_state_storage
