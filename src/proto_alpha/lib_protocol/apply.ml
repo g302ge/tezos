@@ -1274,7 +1274,6 @@ let apply_manager_operation_content :
         assert false
       in
       let root = assert false in
-      let last_inbox_raw_level _state = assert false in
       let last_inbox_level _state ~default:_ = assert false in
       let check_inbox_size _ctxt _metadata = assert false in
       let update_inbox _ctxt _inbox_level _message _metadata = assert false in
@@ -1300,7 +1299,7 @@ let apply_manager_operation_content :
       Tx_rollup_state.burn ~burn_limit state message_size >>?= fun cost ->
       Token.transfer ctxt (`Contract source) `Burned cost
       >>=? fun (ctxt, balance_updates) ->
-      let last_inbox_raw_level = last_inbox_raw_level state in
+      let last_inbox_raw_level = Tx_rollup_state.last_inbox_raw_level state in
       let current_raw_level = (Level.current ctxt).level in
       let first_inbox_message =
         match last_inbox_raw_level with
