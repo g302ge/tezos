@@ -69,6 +69,19 @@ let update :
   Storage.Tx_rollup.State.update ctxt tx_rollup t >>=? fun (ctxt, _) ->
   return ctxt
 
+let bump_inbox_level ctxt rollup state =
+  let current_level = (Raw_context.current_level ctxt).level in
+  let state = Tx_rollup_state_repr.bump_inbox_level state current_level in
+  let inbox_level =
+    Tx_rollup_state_repr.last_inbox_level
+      state
+      ~default:Tx_rollup_level_repr.root
+  in
+  Storage.Tx_rollup.Inbox_level.add (ctxt, rollup) inbox_level current_level
+  >>=? fun (ctxt, _, _) ->
+  Storage.Tx_rollup.State.update ctxt rollup state >>=? fun (ctxt, _) ->
+  return (ctxt, state)
+
 (* ------ Error registration ------------------------------------------------ *)
 
 let () =

@@ -88,3 +88,14 @@ val first_unfinalized_level :
   Raw_context.t ->
   Tx_rollup_repr.t ->
   (Raw_context.t * Raw_level_repr.t option) tzresult Lwt.t
+
+(** [bump_inbox_level ctxt tx_rollup] bumps the inbox level of the
+    current [tx_rollup].
+
+    The storages {Storage.Tx_rollup.Inbox_level} and
+    {Storage.Tx_rollup.State} are updated accordingly.  *)
+val bump_inbox_level :
+  Raw_context.t ->
+  Tx_rollup_repr.t ->
+  Tx_rollup_state_repr.t ->
+  (Raw_context.t * Tx_rollup_state_repr.t) tzresult Lwt.t

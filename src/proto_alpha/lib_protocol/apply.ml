@@ -1312,10 +1312,9 @@ let apply_manager_operation_content :
       in
       (if first_inbox_message then
        check_inbox_progress_limit ctxt state >>?= fun () ->
-       Tx_rollup_state.bump_inbox_level ctxt tx_rollup state >>=? fun ctxt ->
-       return ctxt
-      else return ctxt)
-      >>=? fun ctxt ->
+       Tx_rollup_state.bump_inbox_level ctxt tx_rollup state
+      else return (ctxt, state))
+      >>=? fun (ctxt, state) ->
       let inbox_level = last_inbox_level ~default:root state in
       find_metadata ctxt ~default:fresh_metadata inbox_level
       >>=? fun (ctxt, metadata) ->

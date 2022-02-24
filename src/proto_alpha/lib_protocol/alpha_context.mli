@@ -2033,6 +2033,9 @@ module Tx_rollup_state : sig
   val first_unfinalized_level :
     context -> Tx_rollup.t -> (context * Raw_level.t option) tzresult Lwt.t
 
+  val bump_inbox_level :
+    context -> Tx_rollup.t -> t -> (context * t) tzresult Lwt.t
+
   type error +=
     | Tx_rollup_already_exists of Tx_rollup.t
     | Tx_rollup_does_not_exist of Tx_rollup.t
