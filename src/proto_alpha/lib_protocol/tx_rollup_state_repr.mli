@@ -65,9 +65,10 @@ val update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t
 *)
 val burn : limit:Tez_repr.t option -> t -> int -> Tez_repr.t tzresult
 
-(** [last_inbox_level state] returns the last level for which any messages
-     have been submitted, or None if no messages have been submitted. *)
-val last_inbox_level : t -> Raw_level_repr.t option
+(** [last_inbox_raw_level state] returns the last raw level for which
+   any messages have been submitted, or [None] if there is no
+   non-empty inboxes. *)
+val last_inbox_raw_level : t -> Raw_level_repr.t option
 
 (** [append_inbox state level] updates the newest inbox field for a
     [state] when messages have been added at a level. *)
@@ -92,7 +93,7 @@ module Internal_for_tests : sig
   val make :
     burn_per_byte:Tez_repr.t ->
     inbox_ema:int ->
-    last_inbox_level:Raw_level_repr.t option ->
+    last_inbox_raw_level:Raw_level_repr.t option ->
     t
 
   val get_inbox_ema : t -> int

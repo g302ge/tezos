@@ -2028,7 +2028,7 @@ module Tx_rollup_state : sig
 
   val assert_exist : context -> Tx_rollup.t -> context tzresult Lwt.t
 
-  val last_inbox_level : t -> Raw_level.t option
+  val last_inbox_raw_level : t -> Raw_level.t option
 
   val first_unfinalized_level :
     context -> Tx_rollup.t -> (context * Raw_level.t option) tzresult Lwt.t
@@ -2041,7 +2041,7 @@ module Tx_rollup_state : sig
     val make :
       burn_per_byte:Tez.t ->
       inbox_ema:int ->
-      last_inbox_level:Raw_level.t option ->
+      last_inbox_raw_level:Raw_level.t option ->
       t
 
     val update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t

@@ -52,7 +52,7 @@ type t = {
   unfinalized_level_count : int;
   burn_per_byte : Tez_repr.t;
   inbox_ema : int;
-  last_inbox_level : Raw_level_repr.t option;
+  last_inbox_raw_level : Raw_level_repr.t option;
 }
 
 let initial_state =
@@ -61,7 +61,7 @@ let initial_state =
     unfinalized_level_count = 0;
     burn_per_byte = Tez_repr.zero;
     inbox_ema = 0;
-    last_inbox_level = None;
+    last_inbox_raw_level = None;
   }
 
 let encoding : t Data_encoding.t =
@@ -72,31 +72,31 @@ let encoding : t Data_encoding.t =
            unfinalized_level_count;
            burn_per_byte;
            inbox_ema;
-           last_inbox_level;
+           last_inbox_raw_level;
          } ->
       ( first_unfinalized_level,
         unfinalized_level_count,
         burn_per_byte,
         inbox_ema,
-        last_inbox_level ))
+        last_inbox_raw_level ))
     (fun ( first_unfinalized_level,
            unfinalized_level_count,
            burn_per_byte,
            inbox_ema,
-           last_inbox_level ) ->
+           last_inbox_raw_level ) ->
       {
         first_unfinalized_level;
         unfinalized_level_count;
         burn_per_byte;
         inbox_ema;
-        last_inbox_level;
+        last_inbox_raw_level;
       })
     (obj5
        (req "first_unfinalized_level" (option Raw_level_repr.encoding))
        (req "unfinalized_level_count" int16)
        (req "burn_per_byte" Tez_repr.encoding)
        (req "inbox_ema" int31)
-       (req "last_inbox_level" (option Raw_level_repr.encoding)))
+       (req "last_inbox_raw_level" (option Raw_level_repr.encoding))
 
 let pp fmt
     {
@@ -104,7 +104,7 @@ let pp fmt
       unfinalized_level_count;
       burn_per_byte;
       inbox_ema;
-      last_inbox_level;
+      last_inbox_raw_level;
     } =
   Format.fprintf
     fmt
@@ -117,7 +117,7 @@ let pp fmt
     burn_per_byte
     inbox_ema
     (Format.pp_print_option Raw_level_repr.pp)
-    last_inbox_level
+    last_inbox_raw_level
 
 let update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t =
  fun ({burn_per_byte; inbox_ema; _} as state) ~final_size ~hard_limit ->
@@ -170,14 +170,14 @@ let update_burn_per_byte : t -> final_size:int -> hard_limit:int -> t =
 
 let burn {burn_per_byte; _} size = Tez_repr.(burn_per_byte *? Int64.of_int size)
 
-let last_inbox_level {last_inbox_level; _} = last_inbox_level
+let last_inbox_raw_level {last_inbox_raw_level; _} = last_inbox_raw_level
 
-let append_inbox t level =
+let append_inbox t raw_level =
   {
     t with
-    last_inbox_level = Some level;
+    last_inbox_raw_level = Some raw_level;
     first_unfinalized_level =
-      Some (Option.value ~default:level t.first_unfinalized_level);
+      Some (Option.value ~default:raw_level t.first_unfinalized_level);
     unfinalized_level_count = t.unfinalized_level_count + 1;
   }
 
@@ -231,13 +231,13 @@ module Internal_for_tests = struct
   let make :
       burn_per_byte:Tez_repr.t ->
       inbox_ema:int ->
-      last_inbox_level:Raw_level_repr.t option ->
+      last_inbox_raw_level:Raw_level_repr.t option ->
       t =
-   fun ~burn_per_byte ~inbox_ema ~last_inbox_level ->
+   fun ~burn_per_byte ~inbox_ema ~last_inbox_raw_level ->
     {
       burn_per_byte;
       inbox_ema;
-      last_inbox_level;
+      last_inbox_raw_level;
       first_unfinalized_level = None;
       unfinalized_level_count = 0;
     }

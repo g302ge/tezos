@@ -330,7 +330,7 @@ let test_burn_per_byte_update () =
       Alpha_context.Tx_rollup_state.Internal_for_tests.make
         ~burn_per_byte
         ~inbox_ema
-        ~last_inbox_level:None
+        ~last_inbox_raw_level:None
     in
     let state =
       Alpha_context.Tx_rollup_state.Internal_for_tests.update_burn_per_byte
@@ -855,14 +855,14 @@ let test_inbox_linked_list () =
   in
   originate b contract >>=? fun (b, tx_rollup) ->
   Context.Tx_rollup.state (B b) tx_rollup >>=? fun state ->
-  let last_inbox_level = Tx_rollup_state.last_inbox_level state in
+  let last_inbox_level = Tx_rollup_state.last_inbox_raw_level state in
   Assert.is_none ~loc:__LOC__ ~pp:Raw_level.pp last_inbox_level >>=? fun () ->
   Op.tx_rollup_submit_batch (B b) contract tx_rollup "batch"
   >>=? fun operation ->
   Block.bake ~operation b >>=? fun b ->
   Incremental.begin_construction b >>=? fun i ->
   Context.Tx_rollup.state (B b) tx_rollup >>=? fun state ->
-  let last_inbox_level = Tx_rollup_state.last_inbox_level state in
+  let last_inbox_level = Tx_rollup_state.last_inbox_raw_level state in
   assert_level_equals ~loc:__LOC__ (raw_level 2l) last_inbox_level
   >>=? fun () ->
   (* This inbox has no predecessor link because it's the first inbox in
@@ -883,7 +883,7 @@ let test_inbox_linked_list () =
   Block.bake ~operation b >>=? fun b ->
   Incremental.begin_construction b >>=? fun i ->
   Context.Tx_rollup.state (B b) tx_rollup >>=? fun state ->
-  let last_inbox_level = Tx_rollup_state.last_inbox_level state in
+  let last_inbox_level = Tx_rollup_state.last_inbox_raw_level state in
   assert_level_equals ~loc:__LOC__ (raw_level 4l) last_inbox_level
   >>=? fun () ->
   (* The new inbox has a predecessor of the previous one *)

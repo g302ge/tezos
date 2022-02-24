@@ -69,7 +69,7 @@ let prepare_metadata :
   | None ->
       (* First message in inbox: need to update linked list and pending
          inbox count *)
-      let predecessor = Tx_rollup_state_repr.last_inbox_level state in
+      let predecessor = Tx_rollup_state_repr.last_inbox_raw_level state in
       let new_state = Tx_rollup_state_repr.append_inbox state level in
       Tx_rollup_state_storage.update ctxt rollup new_state >>=? fun ctxt ->
       (match predecessor with
