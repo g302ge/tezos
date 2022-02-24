@@ -1261,13 +1261,20 @@ let apply_manager_operation_content :
       assert_tx_rollup_feature_enabled ctxt >>=? fun () ->
       let message = Tx_rollup_message.(Batch content) in
       let message_size = Tx_rollup_message.size message in
-      Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
-      Tx_rollup_state.burn ~limit:burn_limit state message_size >>?= fun cost ->
-      Token.transfer ctxt (`Contract source) `Burned cost
-      >>=? fun (ctxt, balance_updates) ->
-      Tx_rollup_inbox.append_message ctxt tx_rollup state message
-      >>=? fun (ctxt, state) ->
-      Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
+      (* FIXME: We unplug this code to better use the new
+         abstraction. This comment will be removed in a later commit
+         when everything will be plugged on. *)
+      ( Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
+        Tx_rollup_state.burn ~limit:burn_limit state message_size
+        >>?= fun cost ->
+        Token.transfer ctxt (`Contract source) `Burned cost
+        >>=? fun (ctxt, balance_updates) ->
+        Tx_rollup_inbox.append_message ctxt tx_rollup state message
+        >>=? fun (ctxt, state) ->
+        Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
+        ignore ctxt ;
+        return balance_updates )
+      >>=? fun balance_updates ->
       let result =
         Tx_rollup_submit_batch_result
           {
