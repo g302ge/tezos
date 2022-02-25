@@ -2038,6 +2038,8 @@ module Tx_rollup_state : sig
 
   val last_inbox_level : t -> default:Tx_rollup_level.t -> Tx_rollup_level.t
 
+  val unfinalized_level_count : t -> int
+
   val first_unfinalized_level :
     context -> Tx_rollup.t -> (context * Raw_level.t option) tzresult Lwt.t
 

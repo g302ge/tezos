@@ -1260,14 +1260,6 @@ let apply_manager_operation_content :
       return (ctxt, result, [])
   | Tx_rollup_submit_batch {tx_rollup; content; burn_limit} ->
       assert_tx_rollup_feature_enabled ctxt >>=? fun () ->
-      let message = Tx_rollup_message.(Batch content) in
-      let message_size = Tx_rollup_message.size message in
-
-      (* We implement below some pseudo_code that will be refine one
-         by one in further commit that implement the semantics of this
-         operation. *)
-      (* First we register hooks that will be instantiated later on. *)
-      let check_inbox_progress_limit _ctxt _state = assert false in
       (* The semantics for the execution of a batch submission is the
          following one:
 
@@ -1285,6 +1277,8 @@ let apply_manager_operation_content :
 
          The size limit of the message is handled by the
          {precheck_manager_content} function. *)
+      let message = Tx_rollup_message.(Batch content) in
+      let message_size = Tx_rollup_message.size message in
       Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
       Tx_rollup_state.burn ~burn_limit state message_size >>?= fun cost ->
       Token.transfer ctxt (`Contract source) `Burned cost
@@ -1300,7 +1294,7 @@ let apply_manager_operation_content :
         | Some _ -> false
       in
       (if first_inbox_message then
-       check_inbox_progress_limit ctxt state >>?= fun () ->
+       Tx_rollup_check.check_inbox_progress_limit ctxt state >>?= fun () ->
        Tx_rollup_state.bump_inbox_level ctxt tx_rollup state
       else return (ctxt, state))
       >>=? fun (ctxt, state) ->

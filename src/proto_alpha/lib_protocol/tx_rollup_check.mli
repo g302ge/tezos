@@ -28,3 +28,5 @@
 open Alpha_context
 
 val check_inbox_size : t -> Tx_rollup_inbox.Metadata.t -> unit tzresult
+
+val check_inbox_progress_limit : t -> Tx_rollup_state.t -> unit tzresult

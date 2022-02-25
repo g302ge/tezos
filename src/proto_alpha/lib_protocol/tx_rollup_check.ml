@@ -25,7 +25,11 @@
 (*                                                                           *)
 (*****************************************************************************)
 
+(* FIXME: register this *)
 type error += Tx_rollup_inbox_size_exceeded
+
+(* FIXME: register this *)
+type error += Tx_rollup_inbox_progress_limit
 
 open Alpha_context
 
@@ -38,3 +42,12 @@ let check_inbox_size ctxt metadata =
       metadata.Tx_rollup_inbox.Metadata.cumulated_size
       <= tx_rollup_hard_size_limit_per_inbox)
     Tx_rollup_inbox_size_exceeded
+
+let check_inbox_progress_limit ctxt state =
+  let Constants.{tx_rollup_max_unfinalized_levels; _} =
+    Constants.parametric ctxt
+  in
+  let unfinalized_level_count = Tx_rollup_state.unfinalized_level_count state in
+  error_unless
+    Compare.Int.(unfinalized_level_count <= tx_rollup_max_unfinalized_levels)
+    Tx_rollup_inbox_progress_limit
