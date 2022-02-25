@@ -158,4 +158,11 @@ module Metadata = struct
       cumulated_size = 0;
       hash = Inbox_hash.hash_bytes [Bytes.make hash_size @@ Char.chr 0];
     }
+
+  let update metadata ~message_size ~message_hash =
+    {
+      inbox_length = Int32.succ metadata.inbox_length;
+      cumulated_size = message_size + metadata.cumulated_size;
+      hash = extend_hash metadata.hash message_hash;
+    }
 end

@@ -2175,6 +2175,9 @@ module Tx_rollup_inbox : sig
       Tx_rollup_level.t ->
       default:t ->
       (context * t) tzresult Lwt.t
+
+    val update :
+      t -> message_size:int -> message_hash:Tx_rollup_message.hash -> t
   end
 
   module Internal_for_tests : sig

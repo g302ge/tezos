@@ -110,4 +110,7 @@ module Metadata : sig
   val encoding : t Data_encoding.t
 
   val empty : t
+
+  val update :
+    t -> message_size:int -> message_hash:Tx_rollup_message_repr.hash -> t
 end

@@ -1268,9 +1268,6 @@ let apply_manager_operation_content :
          operation. *)
       (* First we register hooks that will be instantiated later on. *)
       let hash_message _message = assert false in
-      let update_metadata _metadata _message_size _message_hash =
-        assert false
-      in
       let check_inbox_size _ctxt _metadata = assert false in
       let update_inbox _ctxt _inbox_level _message _metadata = assert false in
       let check_inbox_progress_limit _ctxt _state = assert false in
@@ -1323,7 +1320,9 @@ let apply_manager_operation_content :
         ~default:Tx_rollup_inbox.Metadata.empty
       >>=? fun (ctxt, metadata) ->
       let message_hash = hash_message message in
-      let new_metadata = update_metadata metadata message_size message_hash in
+      let new_metadata =
+        Tx_rollup_inbox.Metadata.update metadata ~message_size ~message_hash
+      in
       check_inbox_size ctxt new_metadata >>?= fun () ->
       update_inbox ctxt inbox_level message new_metadata >>=? fun ctxt ->
       let result =
