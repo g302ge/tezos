@@ -648,6 +648,12 @@ module Tx_rollup : sig
       (Raw_context.t * Tx_rollup_message_repr.hash list) tzresult Lwt.t
   end
 
+  module Inbox_contents_bis :
+    Non_iterable_indexed_carbonated_data_storage
+      with type t := (Raw_context.t * Tx_rollup_level_repr.t) * Tx_rollup_repr.t
+       and type key = int32
+       and type value = Tx_rollup_message_repr.hash
+
   (** [fold (ctxt, level) ~order ~init ~f] traverses all rollups with
       a nonempty inbox at [level].
 

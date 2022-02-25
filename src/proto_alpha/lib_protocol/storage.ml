@@ -1487,9 +1487,25 @@ module Tx_rollup = struct
         let name = ["inbox_contents"]
       end)
 
+  module Message_indexed_context_bis =
+    Make_subcontext (Registered) (Inbox_level_tx_rollup_context.Raw_context)
+      (struct
+        let name = ["inbox_contents_bis"]
+      end)
+
   module Inbox_contents =
     Make_indexed_carbonated_data_storage
       (Message_indexed_context)
+      (Make_index (Message_index))
+      (struct
+        type t = Tx_rollup_message_repr.hash
+
+        let encoding = Tx_rollup_message_repr.hash_encoding
+      end)
+
+  module Inbox_contents_bis =
+    Make_indexed_carbonated_data_storage
+      (Message_indexed_context_bis)
       (Make_index (Message_index))
       (struct
         type t = Tx_rollup_message_repr.hash
