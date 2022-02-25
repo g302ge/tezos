@@ -262,6 +262,18 @@ module Metadata = struct
     return (ctxt, Option.value metadata_opt ~default)
 end
 
+let update_inbox ctxt tx_rollup inbox_level message_hash metadata =
+  Storage.Tx_rollup.Inbox_metadata_bis.add
+    (ctxt, inbox_level)
+    tx_rollup
+    metadata
+  >>=? fun (ctxt, _, _) ->
+  Storage.Tx_rollup.Inbox_contents_bis.add
+    ((ctxt, inbox_level), tx_rollup)
+    Int32.(pred metadata.inbox_length) (* We index from 0. *)
+    message_hash
+  >>=? fun (ctxt, _, _) -> return ctxt
+
 (* Error registration *)
 
 let () =

@@ -155,3 +155,11 @@ module Metadata : sig
     default:Tx_rollup_inbox_repr.Metadata.t ->
     (Raw_context.t * Tx_rollup_inbox_repr.Metadata.t) tzresult Lwt.t
 end
+
+val update_inbox :
+  Raw_context.t ->
+  Tx_rollup_repr.t ->
+  Tx_rollup_level_repr.t ->
+  Tx_rollup_message_repr.hash ->
+  Tx_rollup_inbox_repr.Metadata.t ->
+  Raw_context.t tzresult Lwt.t

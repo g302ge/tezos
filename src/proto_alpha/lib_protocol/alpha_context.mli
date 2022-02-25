@@ -2180,6 +2180,14 @@ module Tx_rollup_inbox : sig
       t -> message_size:int -> message_hash:Tx_rollup_message.hash -> t
   end
 
+  val update_inbox :
+    context ->
+    Tx_rollup.t ->
+    Tx_rollup_level.t ->
+    Tx_rollup_message.hash ->
+    Metadata.t ->
+    context tzresult Lwt.t
+
   module Internal_for_tests : sig
     type metadata = {
       inbox_length : int32;
