@@ -151,6 +151,8 @@
         "Ticket_operations_diff",
         "Ticket_accounting",
 
+        "Tx_rollup_check",	
+
         "Script_interpreter_defs",
         "Script_interpreter",
         "Sc_rollup_operations",

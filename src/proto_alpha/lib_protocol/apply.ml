@@ -1267,7 +1267,6 @@ let apply_manager_operation_content :
          by one in further commit that implement the semantics of this
          operation. *)
       (* First we register hooks that will be instantiated later on. *)
-      let check_inbox_size _ctxt _metadata = assert false in
       let check_inbox_progress_limit _ctxt _state = assert false in
       (* The semantics for the execution of a batch submission is the
          following one:
@@ -1321,7 +1320,7 @@ let apply_manager_operation_content :
       let new_metadata =
         Tx_rollup_inbox.Metadata.update metadata ~message_size ~message_hash
       in
-      check_inbox_size ctxt new_metadata >>?= fun () ->
+      Tx_rollup_check.check_inbox_size ctxt new_metadata >>?= fun () ->
       Tx_rollup_inbox.update_inbox
         ctxt
         tx_rollup
