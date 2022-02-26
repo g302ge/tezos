@@ -1893,10 +1893,6 @@ let pair_t :
   let (Ex_dand cmp) = dand (is_comparable l) (is_comparable r) in
   Ty_ex_c (Pair_t (l, r, {size}, cmp))
 
-let comparable_pair_t loc l r =
-  Type_size.compound2 loc (ty_size l) (ty_size r) >|? fun size ->
-  Pair_t (l, r, {size}, YesYes)
-
 let pair_key loc l r =
   Type_size.compound2 loc (ty_size l) (ty_size r) >|? fun size ->
   Pair_t (l, r, {size}, YesYes)
@@ -1911,10 +1907,6 @@ let union_t :
   Type_size.compound2 loc (ty_size l) (ty_size r) >|? fun size ->
   let (Ex_dand cmp) = dand (is_comparable l) (is_comparable r) in
   Ty_ex_c (Union_t (l, r, {size}, cmp))
-
-let comparable_union_t loc l r =
-  Type_size.compound2 loc (ty_size l) (ty_size r) >|? fun size ->
-  Union_t (l, r, {size}, YesYes)
 
 let union_bytes_bool_t =
   Union_t (bytes_t, bool_t, {size = Type_size.three}, YesYes)
