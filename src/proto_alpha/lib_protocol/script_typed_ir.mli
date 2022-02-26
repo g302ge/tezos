@@ -1552,19 +1552,6 @@ val is_comparable : ('v, 'c) ty -> 'c dbool
 
 type 'v ty_ex_c = Ty_ex_c : ('v, _) ty -> 'v ty_ex_c [@@ocaml.unboxed]
 
-val pair_key :
-  Script.location ->
-  'a comparable_ty ->
-  'b comparable_ty ->
-  ('a, 'b) pair comparable_ty tzresult
-
-val pair_3_key :
-  Script.location ->
-  'a comparable_ty ->
-  'b comparable_ty ->
-  'c comparable_ty ->
-  ('a, ('b, 'c) pair) pair comparable_ty tzresult
-
 val union_key :
   Script.location ->
   'a comparable_ty ->
@@ -1602,6 +1589,19 @@ val bool_t : bool comparable_ty
 
 val pair_t :
   Script.location -> ('a, _) ty -> ('b, _) ty -> ('a, 'b) pair ty_ex_c tzresult
+
+val comparable_pair_t :
+  Script.location ->
+  'a comparable_ty ->
+  'b comparable_ty ->
+  ('a, 'b) pair comparable_ty tzresult
+
+val comparable_pair_3_t :
+  Script.location ->
+  'a comparable_ty ->
+  'b comparable_ty ->
+  'c comparable_ty ->
+  ('a, ('b, 'c) pair) pair comparable_ty tzresult
 
 val union_t :
   Script.location -> ('a, _) ty -> ('b, _) ty -> ('a, 'b) union ty_ex_c tzresult
