@@ -459,11 +459,11 @@ let test_diffs_empty () =
   let open Script_typed_ir in
   let* (_contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   (* Start with an empty big-map *)
   let* (empty_big_map, ctxt) =
-    empty_big_map ctxt ~key_type:int_key ~value_type:ticket_string_type
+    empty_big_map ctxt ~key_type:int_t ~value_type:ticket_string_type
   in
   assert_ticket_diffs
     ctxt
@@ -594,17 +594,17 @@ let test_diffs_lazy_storage_alloc () =
   let open Script_typed_ir in
   let* (_contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   (* Start with an empty big-map *)
   let* (empty_big_map, ctxt) =
-    empty_big_map ctxt ~key_type:int_key ~value_type:ticket_string_type
+    empty_big_map ctxt ~key_type:int_t ~value_type:ticket_string_type
   in
   (* We add one ticket to the storage. *)
   let* (lazy_storage_diff, ctxt) =
     alloc_diff
       ctxt
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       [
         ( Script_int_repr.of_int 1,
@@ -628,18 +628,18 @@ let test_diffs_remove_from_big_map () =
   let open Script_typed_ir in
   let* (contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   (* Start with an empty big-map *)
   let* (empty_big_map, ctxt) =
-    empty_big_map ctxt ~key_type:int_key ~value_type:ticket_string_type
+    empty_big_map ctxt ~key_type:int_t ~value_type:ticket_string_type
   in
   (* Remove one ticket from the lazy storage. *)
   let* (lazy_storage_diff, ctxt) =
     remove_diff
       ctxt
       contract
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       ~existing_entries:
         [
@@ -664,18 +664,18 @@ let test_diffs_copy_big_map () =
   let open Script_typed_ir in
   let* (contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   (* Start with an empty big-map *)
   let* (empty_big_map, ctxt) =
-    empty_big_map ctxt ~key_type:int_key ~value_type:ticket_string_type
+    empty_big_map ctxt ~key_type:int_t ~value_type:ticket_string_type
   in
   (* We add one ticket to the storage. *)
   let* (lazy_storage_diff, ctxt) =
     copy_diff
       ctxt
       contract
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       ~existing_entries:
         [
@@ -713,13 +713,13 @@ let test_diffs_add_to_existing_big_map () =
   let open Script_typed_ir in
   let* (contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   let* (old_storage, ctxt) =
     make_big_map
       ctxt
       contract
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       [
         (* It doesn't matter what the old entries are. They are never traversed *)
@@ -736,7 +736,7 @@ let test_diffs_add_to_existing_big_map () =
     existing_diff
       ctxt
       contract
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       ~existing_entries:
         [
@@ -777,14 +777,14 @@ let test_diffs_args_storage_and_lazy_diffs () =
   let open Script_typed_ir in
   let* (contract, ctxt) = init () in
   let*? int_ticket_big_map_ty =
-    big_map_type ~key_type:int_key ~value_type:ticket_string_type
+    big_map_type ~key_type:int_t ~value_type:ticket_string_type
   in
   let*? (Ty_ex_c list_big_map_pair_type) =
     Environment.wrap_tzresult
     @@ pair_t (-1) ticket_string_list_type int_ticket_big_map_ty
   in
   let* (empty_big_map, ctxt) =
-    empty_big_map ctxt ~key_type:int_key ~value_type:ticket_string_type
+    empty_big_map ctxt ~key_type:int_t ~value_type:ticket_string_type
   in
   (* We send two tickets in the args. *)
   let arg =
@@ -799,7 +799,7 @@ let test_diffs_args_storage_and_lazy_diffs () =
     existing_diff
       ctxt
       contract
-      ~key_type:int_key
+      ~key_type:int_t
       ~value_type:ticket_string_type
       ~existing_entries:[]
       ~updates:
