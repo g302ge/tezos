@@ -276,16 +276,11 @@ let serialize_ty_for_error ty =
   *)
   unparse_ty_uncarbonated ~loc:() ty |> Micheline.strip_locations
 
-let[@coq_axiom_with_reason "gadt"] comparable_ty_of_ty :
-    type a ac.
-    context ->
-    Script.location ->
-    (a, ac) ty ->
-    (a comparable_ty * context) tzresult =
- fun ctxt loc ty ->
-  Gas.consume ctxt Typecheck_costs.comparable_ty_of_ty_cycle >>? fun ctxt ->
+let[@coq_axiom_with_reason "gadt"] check_comparable :
+    type a ac. Script.location -> (a, ac) ty -> (ac, yes) eq tzresult =
+ fun loc ty ->
   match is_comparable ty with
-  | Yes -> ok ((ty : a comparable_ty), ctxt)
+  | Yes -> ok Eq
   | No ->
       let t = serialize_ty_for_error ty in
       error (Comparable_type_expected (loc, t))
@@ -4357,8 +4352,8 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
   | (Prim (loc, I_COMPARE, [], annot), Item_t (t1, Item_t (t2, rest))) ->
       check_var_annot loc annot >>?= fun () ->
       check_item_ty ctxt t1 t2 loc I_COMPARE 1 2 >>?= fun (Eq, ctxt) ->
-      comparable_ty_of_ty ctxt loc t1 >>?= fun (key, ctxt) ->
-      let instr = {apply = (fun kinfo k -> ICompare (kinfo, key, k))} in
+      check_comparable loc t1 >>?= fun Eq ->
+      let instr = {apply = (fun kinfo k -> ICompare (kinfo, t1, k))} in
       let stack = Item_t (int_t, rest) in
       (typed ctxt loc instr stack : ((a, s) judgement * context) tzresult Lwt.t)
   (* comparators *)
@@ -4756,8 +4751,8 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
   (* Tickets *)
   | (Prim (loc, I_TICKET, [], annot), Item_t (t, Item_t (Nat_t, rest))) ->
       check_var_annot loc annot >>?= fun () ->
-      comparable_ty_of_ty ctxt loc t >>?= fun (ty, ctxt) ->
-      ticket_t loc ty >>?= fun res_ty ->
+      check_comparable loc t >>?= fun Eq ->
+      ticket_t loc t >>?= fun res_ty ->
       let instr = {apply = (fun kinfo k -> ITicket (kinfo, k))} in
       let stack = Item_t (res_ty, rest) in
       typed ctxt loc instr stack
