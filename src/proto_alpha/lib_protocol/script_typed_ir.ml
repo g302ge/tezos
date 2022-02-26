@@ -1852,8 +1852,6 @@ let int_t = Int_t
 
 let nat_t = Nat_t
 
-let nat_key = nat_t
-
 let signature_t = Signature_t
 
 let signature_key = signature_t
