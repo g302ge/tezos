@@ -1049,7 +1049,7 @@ let[@coq_struct "ty"] rec parse_comparable_ty :
         (Ex_comparable_ty address_t, ctxt)
     | Prim (loc, T_tx_rollup_l2_address, [], annot) ->
         check_type_annot loc annot >|? fun () ->
-        (Ex_comparable_ty tx_rollup_l2_address_key, ctxt)
+        (Ex_comparable_ty tx_rollup_l2_address_t, ctxt)
     | Prim
         ( loc,
           (( T_unit | T_never | T_int | T_nat | T_string | T_bytes | T_mutez
