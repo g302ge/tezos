@@ -296,10 +296,7 @@ module Tests = struct
           true
       | _ -> accu
     in
-    Script_typed_ir.ty_traverse
-      ty
-      false
-      {apply; apply_comparable = (fun accu _ -> accu)}
+    Script_typed_ir.ty_traverse ty false {apply}
 
   let value_size nsamples =
     iter_n_es nsamples @@ fun i ->
