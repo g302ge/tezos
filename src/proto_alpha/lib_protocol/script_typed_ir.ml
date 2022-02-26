@@ -1856,8 +1856,6 @@ let signature_t = Signature_t
 
 let string_t = String_t
 
-let string_key = string_t
-
 let bytes_t = Bytes_t
 
 let bytes_key = bytes_t

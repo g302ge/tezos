@@ -175,7 +175,7 @@ let string_token ~ticketer content =
     @@ Alpha_context.Script_string.of_string content
   in
   Ticket_token.Ex_token
-    {ticketer; contents_type = Script_typed_ir.string_key; contents}
+    {ticketer; contents_type = Script_typed_ir.string_t; contents}
 
 (** Initializes one address for operations and one baker. *)
 let init () =

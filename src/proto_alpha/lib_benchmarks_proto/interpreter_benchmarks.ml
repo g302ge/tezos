@@ -2194,7 +2194,7 @@ module Registration_section = struct
                storage_type = unit;
                arg_type = unit;
                lambda;
-               views = Script_map.empty string_key;
+               views = Script_map.empty string_t;
                entrypoints = no_entrypoints;
                k = halt (operation @$ address @$ bot);
              })
@@ -2734,11 +2734,11 @@ module Registration_section = struct
         ()
 
     let join_tickets_instr =
-      let ticket_str = ticket string_cmp in
+      let ticket_str = ticket string in
       let (Ty_ex_c pair_ticket_str_ticket_str) = pair ticket_str ticket_str in
       IJoin_tickets
         ( kinfo (pair_ticket_str_ticket_str @$ bot),
-          string_cmp,
+          string,
           halt (option ticket_str @$ bot) )
 
     let () =
@@ -2751,7 +2751,7 @@ module Registration_section = struct
           in
           fun () ->
             let ticket =
-              Samplers.Random_value.value (ticket string_cmp) rng_state
+              Samplers.Random_value.value (ticket string) rng_state
             in
             let ticket =
               {
@@ -2773,7 +2773,7 @@ module Registration_section = struct
           in
           fun () ->
             let ticket =
-              Samplers.Random_value.value (ticket string_cmp) rng_state
+              Samplers.Random_value.value (ticket string) rng_state
             in
             let alt_amount = Samplers.Random_value.value nat rng_state in
             let ticket' = {ticket with amount = alt_amount} in
