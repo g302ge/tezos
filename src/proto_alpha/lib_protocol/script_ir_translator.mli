@@ -355,10 +355,6 @@ val unparse_comparable_ty :
   'a Script_typed_ir.comparable_ty ->
   ('loc Script.michelson_node * context) tzresult
 
-val ty_of_comparable_ty :
-  'a Script_typed_ir.comparable_ty ->
-  ('a, Script_typed_ir.yes) Script_typed_ir.ty
-
 val parse_toplevel :
   context -> legacy:bool -> Script.expr -> (toplevel * context) tzresult Lwt.t
 

@@ -175,8 +175,7 @@ module Printers = struct
 
   let string_of_code code = string_of_something @@ fun _ -> return code
 
-  let string_of_comparable_ty cty =
-    string_of_ty (Script_ir_translator.ty_of_comparable_ty cty)
+  let string_of_comparable_ty cty = string_of_ty cty
 end
 
 module Tests = struct
