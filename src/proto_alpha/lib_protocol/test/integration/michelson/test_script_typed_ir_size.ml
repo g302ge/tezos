@@ -272,7 +272,7 @@ module Tests = struct
              "comparable type #%d `%s'"
              i
              (Printers.string_of_comparable_ty cty))
-          (snd (Script_typed_ir_size.Internal_for_tests.comparable_ty_size cty))
+          (snd (Script_typed_ir_size.Internal_for_tests.ty_size cty))
           cty
     | exception _ -> return ()
 
