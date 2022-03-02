@@ -351,7 +351,7 @@ let cost_of_control : type a s r f. (a, s, r, f) continuation -> Gas.cost =
   | KUndip (_, _) -> Interp_costs.Control.undip
   | KLoop_in (_, _) -> Interp_costs.Control.loop_in
   | KLoop_in_left (_, _) -> Interp_costs.Control.loop_in_left
-  | KIter (_, _, _) -> Interp_costs.Control.iter
+  | KIter (_, _, _, _) -> Interp_costs.Control.iter
   | KList_enter_body (_, xs, _, len, _) ->
       Interp_costs.Control.list_enter_body xs len
   | KList_exit_body (_, _, _, _, _) -> Interp_costs.Control.list_exit_body
@@ -453,8 +453,8 @@ let rec kundip :
     a * s * (e, z, b, t) kinstr =
  fun w accu stack k ->
   match w with
-  | KPrefix (kinfo, w) ->
-      let k = IConst (kinfo, accu, k) in
+  | KPrefix (kinfo, ty, w) ->
+      let k = IConst (kinfo, ty, accu, k) in
       let (accu, stack) = stack in
       kundip w accu stack k
   | KRest -> (accu, stack, k)
@@ -484,7 +484,11 @@ let apply ctxt gas capture_ty capture lam =
                  kstack_ty = Item_t (capture_ty, arg_stack_ty);
                }
              in
-             IConst (kinfo_const, capture, ICons_pair (kinfo_pair, descr.kinstr)));
+             IConst
+               ( kinfo_const,
+                 capture_ty,
+                 capture,
+                 ICons_pair (kinfo_pair, descr.kinstr) ));
         }
       in
       let full_expr =
@@ -698,7 +702,7 @@ let rec interp_stack_prefix_preserving_operation :
     (d * w) * result =
  fun f n accu stk ->
   match (n, stk) with
-  | (KPrefix (_, n), rest) ->
+  | (KPrefix (_, _, n), rest) ->
       interp_stack_prefix_preserving_operation f n (fst rest) (snd rest)
       |> fun ((v, rest'), result) -> ((accu, (v, rest')), result)
   | (KRest, v) -> f accu v
@@ -785,7 +789,7 @@ type ('a, 'b, 's, 'r, 'f) kiter_type =
   (('a, 's, 'r, 'f) continuation -> ('a, 's, 'r, 'f) continuation) ->
   outdated_context * step_constants ->
   local_gas_counter ->
-  ('b, 'a * 's, 'a, 's) kinstr * 'b list ->
+  ('b, 'a * 's, 'a, 's) kinstr * 'b ty * 'b list ->
   ('a, 's, 'r, 'f) continuation ->
   'a ->
   's ->
@@ -805,7 +809,7 @@ type ('a, 'b, 'c, 'd, 'e, 'f, 'g) ilist_iter_type =
   (('a, 'b, 'c, 'd) continuation -> ('a, 'b, 'c, 'd) continuation) ->
   outdated_context * step_constants ->
   local_gas_counter ->
-  ('e, 'a * 'b, 'a, 'b) kinstr * ('a, 'b, 'f, 'g) kinstr ->
+  ('e, 'a * 'b, 'a, 'b) kinstr * 'e ty * ('a, 'b, 'f, 'g) kinstr ->
   ('f, 'g, 'c, 'd) continuation ->
   'e boxed_list ->
   'a * 'b ->
@@ -815,7 +819,7 @@ type ('a, 'b, 'c, 'd, 'e, 'f, 'g) iset_iter_type =
   (('a, 'b, 'c, 'd) continuation -> ('a, 'b, 'c, 'd) continuation) ->
   outdated_context * step_constants ->
   local_gas_counter ->
-  ('e, 'a * 'b, 'a, 'b) kinstr * ('a, 'b, 'f, 'g) kinstr ->
+  ('e, 'a * 'b, 'a, 'b) kinstr * 'e ty * ('a, 'b, 'f, 'g) kinstr ->
   ('f, 'g, 'c, 'd) continuation ->
   'e set ->
   'a * 'b ->
@@ -836,7 +840,7 @@ type ('a, 'b, 'c, 'd, 'e, 'f, 'g, 'h) imap_iter_type =
   (('a, 'b, 'c, 'd) continuation -> ('a, 'b, 'c, 'd) continuation) ->
   outdated_context * step_constants ->
   local_gas_counter ->
-  ('e * 'f, 'a * 'b, 'a, 'b) kinstr * ('a, 'b, 'g, 'h) kinstr ->
+  ('e * 'f, 'a * 'b, 'a, 'b) kinstr * ('e * 'f) ty * ('a, 'b, 'g, 'h) kinstr ->
   ('g, 'h, 'c, 'd) continuation ->
   ('e, 'f) map ->
   'a * 'b ->
