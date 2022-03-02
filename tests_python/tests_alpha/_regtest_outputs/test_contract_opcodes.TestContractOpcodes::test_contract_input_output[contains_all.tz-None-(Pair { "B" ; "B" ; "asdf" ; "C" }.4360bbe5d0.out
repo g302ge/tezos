@@ -7,404 +7,404 @@ emitted operations
 big_map diff
   
 trace
-  - location: 12 (remaining gas: 1039962.554 units remaining)
+  - location: 12 (remaining gas: 1039962.329 units remaining)
     [ (Pair (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" }) None) ]
-  - location: 12 (remaining gas: 1039962.544 units remaining)
+  - location: 12 (remaining gas: 1039962.319 units remaining)
     [ (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" }) ]
-  - location: 13 (remaining gas: 1039962.534 units remaining)
+  - location: 13 (remaining gas: 1039962.309 units remaining)
     [ (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" })
       (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" }) ]
-  - location: 14 (remaining gas: 1039962.524 units remaining)
+  - location: 14 (remaining gas: 1039962.299 units remaining)
     [ { "B" ; "B" ; "asdf" ; "C" }
       (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" }) ]
-  - location: 15 (remaining gas: 1039962.509 units remaining)
+  - location: 15 (remaining gas: 1039962.284 units remaining)
     [ (Pair { "B" ; "B" ; "asdf" ; "C" } { "B" ; "C" ; "asdf" }) ]
-  - location: 17 (remaining gas: 1039962.499 units remaining)
+  - location: 17 (remaining gas: 1039962.274 units remaining)
     [ { "B" ; "C" ; "asdf" } ]
-  - location: 15 (remaining gas: 1039962.469 units remaining)
+  - location: 15 (remaining gas: 1039962.229 units remaining)
     [ { "B" ; "B" ; "asdf" ; "C" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 18 (remaining gas: 1039962.249 units remaining)
+  - location: 18 (remaining gas: 1039962.009 units remaining)
     [ {}
       { "B" ; "B" ; "asdf" ; "C" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 20 (remaining gas: 1039962.239 units remaining)
+  - location: 20 (remaining gas: 1039961.999 units remaining)
     [ { "B" ; "B" ; "asdf" ; "C" }
       {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 21 (remaining gas: 1039962.239 units remaining)
+  - location: 21 (remaining gas: 1039961.954 units remaining)
     [ "B"
       {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 23 (remaining gas: 1039962.224 units remaining)
+  - location: 23 (remaining gas: 1039961.939 units remaining)
     [ (Pair "B" {})
       { "B" ; "C" ; "asdf" } ]
-  - location: 24 (remaining gas: 1039962.214 units remaining)
+  - location: 24 (remaining gas: 1039961.929 units remaining)
     [ (Pair "B" {})
       (Pair "B" {})
       { "B" ; "C" ; "asdf" } ]
-  - location: 25 (remaining gas: 1039962.204 units remaining)
+  - location: 25 (remaining gas: 1039961.919 units remaining)
     [ "B"
       (Pair "B" {})
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039962.189 units remaining)
+  - location: 26 (remaining gas: 1039961.904 units remaining)
     [ (Pair "B" {})
       { "B" ; "C" ; "asdf" } ]
-  - location: 28 (remaining gas: 1039962.179 units remaining)
+  - location: 28 (remaining gas: 1039961.894 units remaining)
     [ {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039962.149 units remaining)
+  - location: 26 (remaining gas: 1039961.849 units remaining)
     [ "B"
       {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 29 (remaining gas: 1039962.139 units remaining)
+  - location: 29 (remaining gas: 1039961.839 units remaining)
     [ True
       "B"
       {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 32 (remaining gas: 1039962.129 units remaining)
+  - location: 32 (remaining gas: 1039961.829 units remaining)
     [ "B"
       True
       {}
       { "B" ; "C" ; "asdf" } ]
-  - location: 33 (remaining gas: 1039961.997 units remaining)
+  - location: 33 (remaining gas: 1039961.697 units remaining)
     [ { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 21 (remaining gas: 1039961.982 units remaining)
+  - location: 21 (remaining gas: 1039961.662 units remaining)
     [ "B"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 23 (remaining gas: 1039961.967 units remaining)
+  - location: 23 (remaining gas: 1039961.647 units remaining)
     [ (Pair "B" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 24 (remaining gas: 1039961.957 units remaining)
+  - location: 24 (remaining gas: 1039961.637 units remaining)
     [ (Pair "B" { "B" })
       (Pair "B" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 25 (remaining gas: 1039961.947 units remaining)
+  - location: 25 (remaining gas: 1039961.627 units remaining)
     [ "B"
       (Pair "B" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.932 units remaining)
+  - location: 26 (remaining gas: 1039961.612 units remaining)
     [ (Pair "B" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 28 (remaining gas: 1039961.922 units remaining)
+  - location: 28 (remaining gas: 1039961.602 units remaining)
     [ { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.892 units remaining)
+  - location: 26 (remaining gas: 1039961.557 units remaining)
     [ "B"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 29 (remaining gas: 1039961.882 units remaining)
+  - location: 29 (remaining gas: 1039961.547 units remaining)
     [ True
       "B"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 32 (remaining gas: 1039961.872 units remaining)
+  - location: 32 (remaining gas: 1039961.537 units remaining)
     [ "B"
       True
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 33 (remaining gas: 1039961.738 units remaining)
+  - location: 33 (remaining gas: 1039961.403 units remaining)
     [ { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 21 (remaining gas: 1039961.723 units remaining)
+  - location: 21 (remaining gas: 1039961.368 units remaining)
     [ "asdf"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 23 (remaining gas: 1039961.708 units remaining)
+  - location: 23 (remaining gas: 1039961.353 units remaining)
     [ (Pair "asdf" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 24 (remaining gas: 1039961.698 units remaining)
+  - location: 24 (remaining gas: 1039961.343 units remaining)
     [ (Pair "asdf" { "B" })
       (Pair "asdf" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 25 (remaining gas: 1039961.688 units remaining)
+  - location: 25 (remaining gas: 1039961.333 units remaining)
     [ "asdf"
       (Pair "asdf" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.673 units remaining)
+  - location: 26 (remaining gas: 1039961.318 units remaining)
     [ (Pair "asdf" { "B" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 28 (remaining gas: 1039961.663 units remaining)
+  - location: 28 (remaining gas: 1039961.308 units remaining)
     [ { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.633 units remaining)
+  - location: 26 (remaining gas: 1039961.263 units remaining)
     [ "asdf"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 29 (remaining gas: 1039961.623 units remaining)
+  - location: 29 (remaining gas: 1039961.253 units remaining)
     [ True
       "asdf"
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 32 (remaining gas: 1039961.613 units remaining)
+  - location: 32 (remaining gas: 1039961.243 units remaining)
     [ "asdf"
       True
       { "B" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 33 (remaining gas: 1039961.467 units remaining)
+  - location: 33 (remaining gas: 1039961.097 units remaining)
     [ { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 21 (remaining gas: 1039961.452 units remaining)
+  - location: 21 (remaining gas: 1039961.062 units remaining)
     [ "C"
       { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 23 (remaining gas: 1039961.437 units remaining)
+  - location: 23 (remaining gas: 1039961.047 units remaining)
     [ (Pair "C" { "B" ; "asdf" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 24 (remaining gas: 1039961.427 units remaining)
+  - location: 24 (remaining gas: 1039961.037 units remaining)
     [ (Pair "C" { "B" ; "asdf" })
       (Pair "C" { "B" ; "asdf" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 25 (remaining gas: 1039961.417 units remaining)
+  - location: 25 (remaining gas: 1039961.027 units remaining)
     [ "C"
       (Pair "C" { "B" ; "asdf" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.402 units remaining)
+  - location: 26 (remaining gas: 1039961.012 units remaining)
     [ (Pair "C" { "B" ; "asdf" })
       { "B" ; "C" ; "asdf" } ]
-  - location: 28 (remaining gas: 1039961.392 units remaining)
+  - location: 28 (remaining gas: 1039961.002 units remaining)
     [ { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 26 (remaining gas: 1039961.362 units remaining)
+  - location: 26 (remaining gas: 1039960.957 units remaining)
     [ "C"
       { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 29 (remaining gas: 1039961.352 units remaining)
+  - location: 29 (remaining gas: 1039960.947 units remaining)
     [ True
       "C"
       { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 32 (remaining gas: 1039961.342 units remaining)
+  - location: 32 (remaining gas: 1039960.937 units remaining)
     [ "C"
       True
       { "B" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 33 (remaining gas: 1039961.206 units remaining)
+  - location: 33 (remaining gas: 1039960.801 units remaining)
     [ { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 21 (remaining gas: 1039961.191 units remaining)
+  - location: 21 (remaining gas: 1039960.751 units remaining)
     [ { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 34 (remaining gas: 1039961.181 units remaining)
+  - location: 34 (remaining gas: 1039960.741 units remaining)
     [ True
       { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" } ]
-  - location: 37 (remaining gas: 1039961.171 units remaining)
+  - location: 37 (remaining gas: 1039960.731 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True
       { "B" ; "C" ; "asdf" } ]
-  - location: 38 (remaining gas: 1039961.156 units remaining)
+  - location: 38 (remaining gas: 1039960.716 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True)
       { "B" ; "C" ; "asdf" } ]
-  - location: 39 (remaining gas: 1039961.146 units remaining)
+  - location: 39 (remaining gas: 1039960.706 units remaining)
     [ { "B" ; "C" ; "asdf" }
       (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 40 (remaining gas: 1039961.146 units remaining)
+  - location: 40 (remaining gas: 1039960.661 units remaining)
     [ "B"
       (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 42 (remaining gas: 1039961.131 units remaining)
+  - location: 42 (remaining gas: 1039960.646 units remaining)
     [ (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 43 (remaining gas: 1039961.121 units remaining)
+  - location: 43 (remaining gas: 1039960.636 units remaining)
     [ (Pair "B" { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 44 (remaining gas: 1039961.111 units remaining)
+  - location: 44 (remaining gas: 1039960.626 units remaining)
     [ (Pair "B" { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 45 (remaining gas: 1039961.101 units remaining)
+  - location: 45 (remaining gas: 1039960.616 units remaining)
     [ "B"
       (Pair "B" { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 46 (remaining gas: 1039961.086 units remaining)
+  - location: 46 (remaining gas: 1039960.601 units remaining)
     [ (Pair "B" { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 49 (remaining gas: 1039961.076 units remaining)
+  - location: 49 (remaining gas: 1039960.591 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True)
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 50 (remaining gas: 1039961.066 units remaining)
+  - location: 50 (remaining gas: 1039960.581 units remaining)
     [ { "B" ; "C" ; "asdf" }
       (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 51 (remaining gas: 1039961.051 units remaining)
+  - location: 51 (remaining gas: 1039960.566 units remaining)
     [ (Pair "B" { "B" ; "C" ; "asdf" } True) ]
-  - location: 54 (remaining gas: 1039961.041 units remaining)
+  - location: 54 (remaining gas: 1039960.556 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 55 (remaining gas: 1039961.031 units remaining)
+  - location: 55 (remaining gas: 1039960.546 units remaining)
     [ True ]
-  - location: 51 (remaining gas: 1039961.001 units remaining)
+  - location: 51 (remaining gas: 1039960.501 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 56 (remaining gas: 1039960.991 units remaining)
+  - location: 56 (remaining gas: 1039960.491 units remaining)
     [ { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 46 (remaining gas: 1039960.961 units remaining)
+  - location: 46 (remaining gas: 1039960.446 units remaining)
     [ "B"
       { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 57 (remaining gas: 1039960.843 units remaining)
+  - location: 57 (remaining gas: 1039960.328 units remaining)
     [ True
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 58 (remaining gas: 1039960.828 units remaining)
+  - location: 58 (remaining gas: 1039960.313 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 60 (remaining gas: 1039960.818 units remaining)
+  - location: 60 (remaining gas: 1039960.303 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 58 (remaining gas: 1039960.788 units remaining)
+  - location: 58 (remaining gas: 1039960.258 units remaining)
     [ True
       True
       { "B" ; "C" ; "asdf" } ]
-  - location: 61 (remaining gas: 1039960.768 units remaining)
+  - location: 61 (remaining gas: 1039960.238 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 62 (remaining gas: 1039960.758 units remaining)
+  - location: 62 (remaining gas: 1039960.228 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 63 (remaining gas: 1039960.743 units remaining)
+  - location: 63 (remaining gas: 1039960.213 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 40 (remaining gas: 1039960.728 units remaining)
+  - location: 40 (remaining gas: 1039960.178 units remaining)
     [ "C"
       (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 42 (remaining gas: 1039960.713 units remaining)
+  - location: 42 (remaining gas: 1039960.163 units remaining)
     [ (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 43 (remaining gas: 1039960.703 units remaining)
+  - location: 43 (remaining gas: 1039960.153 units remaining)
     [ (Pair "C" { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 44 (remaining gas: 1039960.693 units remaining)
+  - location: 44 (remaining gas: 1039960.143 units remaining)
     [ (Pair "C" { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 45 (remaining gas: 1039960.683 units remaining)
+  - location: 45 (remaining gas: 1039960.133 units remaining)
     [ "C"
       (Pair "C" { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 46 (remaining gas: 1039960.668 units remaining)
+  - location: 46 (remaining gas: 1039960.118 units remaining)
     [ (Pair "C" { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 49 (remaining gas: 1039960.658 units remaining)
+  - location: 49 (remaining gas: 1039960.108 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True)
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 50 (remaining gas: 1039960.648 units remaining)
+  - location: 50 (remaining gas: 1039960.098 units remaining)
     [ { "B" ; "C" ; "asdf" }
       (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 51 (remaining gas: 1039960.633 units remaining)
+  - location: 51 (remaining gas: 1039960.083 units remaining)
     [ (Pair "C" { "B" ; "C" ; "asdf" } True) ]
-  - location: 54 (remaining gas: 1039960.623 units remaining)
+  - location: 54 (remaining gas: 1039960.073 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 55 (remaining gas: 1039960.613 units remaining)
+  - location: 55 (remaining gas: 1039960.063 units remaining)
     [ True ]
-  - location: 51 (remaining gas: 1039960.583 units remaining)
+  - location: 51 (remaining gas: 1039960.018 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 56 (remaining gas: 1039960.573 units remaining)
+  - location: 56 (remaining gas: 1039960.008 units remaining)
     [ { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 46 (remaining gas: 1039960.543 units remaining)
+  - location: 46 (remaining gas: 1039959.963 units remaining)
     [ "C"
       { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 57 (remaining gas: 1039960.425 units remaining)
+  - location: 57 (remaining gas: 1039959.845 units remaining)
     [ True
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 58 (remaining gas: 1039960.410 units remaining)
+  - location: 58 (remaining gas: 1039959.830 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 60 (remaining gas: 1039960.400 units remaining)
+  - location: 60 (remaining gas: 1039959.820 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 58 (remaining gas: 1039960.370 units remaining)
+  - location: 58 (remaining gas: 1039959.775 units remaining)
     [ True
       True
       { "B" ; "C" ; "asdf" } ]
-  - location: 61 (remaining gas: 1039960.350 units remaining)
+  - location: 61 (remaining gas: 1039959.755 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 62 (remaining gas: 1039960.340 units remaining)
+  - location: 62 (remaining gas: 1039959.745 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 63 (remaining gas: 1039960.325 units remaining)
+  - location: 63 (remaining gas: 1039959.730 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 40 (remaining gas: 1039960.310 units remaining)
+  - location: 40 (remaining gas: 1039959.695 units remaining)
     [ "asdf"
       (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 42 (remaining gas: 1039960.295 units remaining)
+  - location: 42 (remaining gas: 1039959.680 units remaining)
     [ (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 43 (remaining gas: 1039960.285 units remaining)
+  - location: 43 (remaining gas: 1039959.670 units remaining)
     [ (Pair "asdf" { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 44 (remaining gas: 1039960.275 units remaining)
+  - location: 44 (remaining gas: 1039959.660 units remaining)
     [ (Pair "asdf" { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 45 (remaining gas: 1039960.265 units remaining)
+  - location: 45 (remaining gas: 1039959.650 units remaining)
     [ "asdf"
       (Pair "asdf" { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 46 (remaining gas: 1039960.250 units remaining)
+  - location: 46 (remaining gas: 1039959.635 units remaining)
     [ (Pair "asdf" { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 49 (remaining gas: 1039960.240 units remaining)
+  - location: 49 (remaining gas: 1039959.625 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True)
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 50 (remaining gas: 1039960.230 units remaining)
+  - location: 50 (remaining gas: 1039959.615 units remaining)
     [ { "B" ; "C" ; "asdf" }
       (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 51 (remaining gas: 1039960.215 units remaining)
+  - location: 51 (remaining gas: 1039959.600 units remaining)
     [ (Pair "asdf" { "B" ; "C" ; "asdf" } True) ]
-  - location: 54 (remaining gas: 1039960.205 units remaining)
+  - location: 54 (remaining gas: 1039959.590 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 55 (remaining gas: 1039960.195 units remaining)
+  - location: 55 (remaining gas: 1039959.580 units remaining)
     [ True ]
-  - location: 51 (remaining gas: 1039960.165 units remaining)
+  - location: 51 (remaining gas: 1039959.535 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 56 (remaining gas: 1039960.155 units remaining)
+  - location: 56 (remaining gas: 1039959.525 units remaining)
     [ { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 46 (remaining gas: 1039960.125 units remaining)
+  - location: 46 (remaining gas: 1039959.480 units remaining)
     [ "asdf"
       { "B" ; "C" ; "asdf" }
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 57 (remaining gas: 1039959.998 units remaining)
+  - location: 57 (remaining gas: 1039959.353 units remaining)
     [ True
       { "B" ; "C" ; "asdf" }
       True ]
-  - location: 58 (remaining gas: 1039959.983 units remaining)
+  - location: 58 (remaining gas: 1039959.338 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 60 (remaining gas: 1039959.973 units remaining)
+  - location: 60 (remaining gas: 1039959.328 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 58 (remaining gas: 1039959.943 units remaining)
+  - location: 58 (remaining gas: 1039959.283 units remaining)
     [ True
       True
       { "B" ; "C" ; "asdf" } ]
-  - location: 61 (remaining gas: 1039959.923 units remaining)
+  - location: 61 (remaining gas: 1039959.263 units remaining)
     [ True
       { "B" ; "C" ; "asdf" } ]
-  - location: 62 (remaining gas: 1039959.913 units remaining)
+  - location: 62 (remaining gas: 1039959.253 units remaining)
     [ { "B" ; "C" ; "asdf" }
       True ]
-  - location: 63 (remaining gas: 1039959.898 units remaining)
+  - location: 63 (remaining gas: 1039959.238 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 40 (remaining gas: 1039959.883 units remaining)
+  - location: 40 (remaining gas: 1039959.188 units remaining)
     [ (Pair { "B" ; "C" ; "asdf" } True) ]
-  - location: 64 (remaining gas: 1039959.873 units remaining)
+  - location: 64 (remaining gas: 1039959.178 units remaining)
     [ True ]
-  - location: 65 (remaining gas: 1039959.858 units remaining)
+  - location: 65 (remaining gas: 1039959.163 units remaining)
     [ (Some True) ]
-  - location: 66 (remaining gas: 1039959.843 units remaining)
+  - location: 66 (remaining gas: 1039959.148 units remaining)
     [ {}
       (Some True) ]
-  - location: 68 (remaining gas: 1039959.828 units remaining)
+  - location: 68 (remaining gas: 1039959.133 units remaining)
     [ (Pair {} (Some True)) ]
 

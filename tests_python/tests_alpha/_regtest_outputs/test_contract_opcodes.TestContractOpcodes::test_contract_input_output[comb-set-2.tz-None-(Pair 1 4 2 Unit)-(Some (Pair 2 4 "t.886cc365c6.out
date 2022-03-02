@@ -7,30 +7,30 @@ emitted operations
 big_map diff
   
 trace
-  - location: 16 (remaining gas: 1039985.081 units remaining)
+  - location: 16 (remaining gas: 1039984.901 units remaining)
     [ (Pair (Pair 1 4 2 Unit) None) ]
-  - location: 16 (remaining gas: 1039985.071 units remaining)
+  - location: 16 (remaining gas: 1039984.891 units remaining)
     [ (Pair 1 4 2 Unit) ]
-  - location: 17 (remaining gas: 1039985.061 units remaining)
+  - location: 17 (remaining gas: 1039984.881 units remaining)
     [ 2
       (Pair 1 4 2 Unit) ]
-  - location: 20 (remaining gas: 1039985.020 units remaining)
+  - location: 20 (remaining gas: 1039984.840 units remaining)
     [ (Pair 2 4 2 Unit) ]
-  - location: 22 (remaining gas: 1039985.010 units remaining)
+  - location: 22 (remaining gas: 1039984.830 units remaining)
     [ "toto"
       (Pair 2 4 2 Unit) ]
-  - location: 25 (remaining gas: 1039984.964 units remaining)
+  - location: 25 (remaining gas: 1039984.784 units remaining)
     [ (Pair 2 4 "toto" Unit) ]
-  - location: 27 (remaining gas: 1039984.954 units remaining)
+  - location: 27 (remaining gas: 1039984.774 units remaining)
     [ 0x01
       (Pair 2 4 "toto" Unit) ]
-  - location: 30 (remaining gas: 1039984.907 units remaining)
+  - location: 30 (remaining gas: 1039984.727 units remaining)
     [ (Pair 2 4 "toto" 0x01) ]
-  - location: 32 (remaining gas: 1039984.892 units remaining)
+  - location: 32 (remaining gas: 1039984.712 units remaining)
     [ (Some (Pair 2 4 "toto" 0x01)) ]
-  - location: 33 (remaining gas: 1039984.877 units remaining)
+  - location: 33 (remaining gas: 1039984.697 units remaining)
     [ {}
       (Some (Pair 2 4 "toto" 0x01)) ]
-  - location: 35 (remaining gas: 1039984.862 units remaining)
+  - location: 35 (remaining gas: 1039984.682 units remaining)
     [ (Pair {} (Some (Pair 2 4 "toto" 0x01))) ]
 
