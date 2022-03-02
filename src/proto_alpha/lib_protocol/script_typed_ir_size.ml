@@ -255,7 +255,7 @@ let rec entrypoints_size : type arg. arg entrypoints -> nodes_and_size =
   in
   ret_succ_adding nested_size name_size
 
-let kinfo_size {iloc = _; kstack_ty = _} = h2w
+let kinfo_size {iloc = _} = h2w
 
 (* The following mutually recursive functions are mostly
    tail-recursive and the only recursive call that is not a tailcall
@@ -671,7 +671,7 @@ and kinstr_size :
           (base kinfo +! word_size)
     | IOpen_chest (kinfo, _) -> ret_succ_adding accu (base kinfo)
     | IHalt kinfo -> ret_succ_adding accu (h1w +! kinfo_size kinfo)
-    | ILog (_, _, _, _) ->
+    | ILog _ ->
         (* This instruction is ignored because it is only used for testing. *)
         accu
   in
@@ -699,7 +699,6 @@ let rec kinstr_extra_size : type a s r f. (a, s, r, f) kinstr -> nodes_and_size
       | IComb_get (_, n, _, _) -> comb (n / 2)
       | IComb_set (_, n, _, _) -> comb (n / 2)
       | IDup_n (_, n, _, _) -> dup_n_gadt_witness_size n
-      | ICompare (_, ty, _) -> comparable_ty_size ty
       | ILambda (_, lambda, _) -> lambda_extra_size lambda
       | ICreate_contract {lambda; _} -> lambda_extra_size lambda
       | _ -> zero

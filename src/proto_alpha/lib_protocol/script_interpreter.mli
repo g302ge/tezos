@@ -132,7 +132,7 @@ val execute_with_typed_parameter :
   internal:bool ->
   (execution_result * context) tzresult Lwt.t
 
-(** [kstep logger ctxt step_constants kinstr accu stack] interprets the
+(** [kstep logger ctxt step_constants sty kinstr accu stack] interprets the
     script represented by [kinstr] under the context [ctxt]. This will
     turn a stack whose topmost element is [accu] and remaining elements
     [stack] into a new accumulator and a new stack. This function also
@@ -143,6 +143,7 @@ val kstep :
   logger option ->
   context ->
   step_constants ->
+  ('a, 's) stack_ty ->
   ('a, 's, 'r, 'f) Script_typed_ir.kinstr ->
   'a ->
   's ->
@@ -171,6 +172,7 @@ module Internals : sig
     logger option ->
     Local_gas_counter.outdated_context * step_constants ->
     Local_gas_counter.local_gas_counter ->
+    ('a, 's) stack_ty ->
     ('a, 's, 'r, 'f) continuation ->
     'a ->
     's ->
