@@ -1653,7 +1653,8 @@ let apply_external_manager_operation_content :
   | Tx_rollup_finalize_commitment {tx_rollup} ->
       Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
       Tx_rollup_commitment.finalize_commitment ctxt tx_rollup state
-      >>=? fun (ctxt, state, level) ->
+      >>=? fun (ctxt, state, level, _to_reward) ->
+      (* TODO/TORU: reward successful prerejections *)
       Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
       let result =
         Tx_rollup_finalize_commitment_result

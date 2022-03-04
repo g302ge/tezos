@@ -138,7 +138,11 @@ val finalize_commitment :
   Raw_context.t ->
   Tx_rollup_repr.t ->
   Tx_rollup_state_repr.t ->
-  (Raw_context.t * Tx_rollup_state_repr.t * Tx_rollup_level_repr.t) tzresult
+  (Raw_context.t
+  * Tx_rollup_state_repr.t
+  * Tx_rollup_level_repr.t
+  * Signature.public_key_hash list)
+  tzresult
   Lwt.t
 
 (** [remove_commitment ctxt tx_rollup state] tries to remove the

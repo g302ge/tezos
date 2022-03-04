@@ -245,9 +245,14 @@ let finalize_commitment ctxt rollup state =
         (oldest_inbox_level, rollup)
         {commitment with finalized_at = Some current_level}
       >>=? fun (ctxt, _) ->
+      Tx_rollup_rejection_storage.finalize_prerejections
+        ctxt
+        rollup
+        oldest_inbox_level
+      >>=? fun (ctxt, to_reward) ->
       (* We update the state *)
       Tx_rollup_state_repr.record_inbox_deletion state oldest_inbox_level
-      >>?= fun state -> return (ctxt, state, oldest_inbox_level)
+      >>?= fun state -> return (ctxt, state, oldest_inbox_level, to_reward)
   | _ -> fail No_commitment_to_finalize
 
 let remove_commitment ctxt rollup state =

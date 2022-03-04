@@ -1570,34 +1570,80 @@ module Rejection = struct
 
     return ()
 
-  (** [test_missing_prerejection] tests that rejection succeeds if the commitment is
-      wrong and the proof is correct. *)
+  (** [test_missing_prerejection] tests that rejection fails without a
+      corresponding prerejection *)
   let test_missing_prerejection () =
-    init_with_valid_commitment ()
-    >>=? fun (i, contract, tx_rollup, level, message, commitment) ->
-    let proof = true in
+    context_init2 () >>=? fun (b, contract1, contract2) ->
+    originate b contract1 >>=? fun (b, tx_rollup) ->
+    let message = "bogus" in
+    Op.tx_rollup_submit_batch (B b) contract1 tx_rollup message
+    >>=? fun operation ->
+    Block.bake ~operation b >>=? fun b ->
+    Incremental.begin_construction b >>=? fun i ->
+    let level = Tx_rollup_level.root in
+    make_commitment_for_batch i level tx_rollup []
+    >>=? fun (commitment, _batches_result) ->
+    Op.tx_rollup_commit (I i) contract1 tx_rollup commitment >>=? fun op ->
+    Incremental.add_operation i op >>=? fun i ->
+    let commitment_hash = Tx_rollup_commitment.hash commitment in
+    (* We create a prerejection for contract1... *)
+    Op.tx_rollup_prereject
+      (I i)
+      ~source:contract1
+      ~tx_rollup
+      ~level
+      ~message_position:0
+      ~proof:true
+    >>=? fun op ->
+    Incremental.add_operation i op >>=? fun i ->
     let (message, _size) = Tx_rollup_message.make_batch message in
+    (*... but contract2 tries to reject *)
     Op.tx_rollup_reject
       (I i)
-      contract
+      contract2
       tx_rollup
       level
       message
       ~message_position:0
-      ~proof
+      ~proof:true
       ~previous_message_result:
         {
           context_hash = Tx_rollup_commitment.empty_l2_context_hash;
           withdrawals_merkle_root =
             Tx_rollup_withdraw.empty_withdrawals_merkle_root;
         }
-      ~commitment
+      ~commitment:commitment_hash
     >>=? fun op ->
     Incremental.add_operation
       i
       op
       ~expect_failure:
         (check_proto_error Tx_rollup_errors.Rejection_without_prerejection)
+    >>=? fun i ->
+    ignore i ;
+
+    return ()
+
+  (** [test_prerejection_without_inbox] tests that rejection fails
+      when there are no inboxes at all.  Mainly for coverage. *)
+  let test_prerejection_without_inbox () =
+    context_init1 () >>=? fun (b, contract) ->
+    originate b contract >>=? fun (b, tx_rollup) ->
+    Incremental.begin_construction b >>=? fun i ->
+    let level = Tx_rollup_level.root in
+    Op.tx_rollup_prereject
+      (I i)
+      ~source:contract
+      ~tx_rollup
+      ~level
+      ~message_position:0
+      ~proof:true
+    >>=? fun op ->
+    Incremental.add_operation
+      i
+      op
+      ~expect_failure:
+        (check_proto_error Tx_rollup_errors.Prerejection_without_inbox)
     >>=? fun i ->
     ignore i ;
 
@@ -1631,6 +1677,10 @@ module Rejection = struct
         `Quick
         test_wrong_message_position;
       Tztest.tztest "Test missing prerejection" `Quick test_missing_prerejection;
+      Tztest.tztest
+        "Test missing inbox for prerejection"
+        `Quick
+        test_prerejection_without_inbox;
     ]
 end
 
