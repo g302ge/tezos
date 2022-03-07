@@ -127,7 +127,7 @@ let main_promise (config_file : string option)
          rpc_server_port;
          rpc_server_tls;
          sym_block_caching_time;
-         data_dir;
+         data_dir = data_dir_opt;
        } =
     get_runtime config_from_file config_args
   in
@@ -161,13 +161,27 @@ let main_promise (config_file : string option)
       `Mode_proxy
       None
   in
+  let*! (context_index : Tezos_context.Context.index option) =
+    Option.map_s
+      (fun data_dir ->
+        let context_path = Filename.concat data_dir "context" in
+        Tezos_shell_context.Proxy_delegate_maker.make_index ~context_path)
+      data_dir_opt
+  in
+  let on_disk_proxy_builder (index : Tezos_context.Context.index)
+      (ctx_hash : Context_hash.t) : Proxy_delegate.t tzresult Lwt.t =
+    let open Lwt_syntax in
+    let* () = Tezos_context.Context.sync index in
+    Tezos_shell_context.Proxy_delegate_maker.of_index ~index ctx_hash
+  in
+  let on_disk_proxy_builder = Option.map on_disk_proxy_builder context_index in
   let dir =
     let sleep = Lwt_unix.sleep in
     Tezos_proxy.Proxy_services.build_directory
       printer
       http_ctxt
       (Tezos_proxy.Proxy_services.Proxy_server
-         {sleep; sym_block_caching_time; data_dir})
+         {sleep; sym_block_caching_time; on_disk_proxy_builder})
       proxy_env
   in
   let server_args : Proxy_server_main_run.args =
