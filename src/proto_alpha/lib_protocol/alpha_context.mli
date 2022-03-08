@@ -2444,6 +2444,10 @@ module Sc_rollup : sig
 
     val encoding : t Data_encoding.t
 
+    type history
+
+    val history_encoding : history Data_encoding.t
+
     val empty : Address.t -> Raw_level.t -> t
 
     val number_of_available_messages : t -> Z.t
