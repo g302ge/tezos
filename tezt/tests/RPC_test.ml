@@ -79,7 +79,8 @@ let check_rpc ~protocols ~test_mode_tag
   let (client_mode_tag, title_tag) =
     match test_mode_tag with
     | `Client -> (`Client, "client")
-    | `Client_with_proxy_server -> (`Client, "proxy_server")
+    | `Client_rpc_proxy_server -> (`Client, "proxy_server_rpc")
+    | `Client_data_dir_proxy_server -> (`Client, "proxy_server_data_dir")
     | `Light -> (`Light, "light")
     | `Proxy -> (`Proxy, "proxy")
   in
@@ -107,7 +108,7 @@ let check_rpc ~protocols ~test_mode_tag
           in
           let bake =
             match test_mode_tag with
-            | `Client_with_proxy_server ->
+            | `Client_rpc_proxy_server | `Client_data_dir_proxy_server ->
                 (* Because the proxy server doesn't support genesis. *)
                 true
             | `Client | `Light | `Proxy -> false
@@ -124,8 +125,15 @@ let check_rpc ~protocols ~test_mode_tag
           let* endpoint =
             match test_mode_tag with
             | `Client | `Light | `Proxy -> return Client.(Node node)
-            | `Client_with_proxy_server ->
-                let* proxy_server = Proxy_server.init node in
+            | (`Client_rpc_proxy_server | `Client_data_dir_proxy_server) as
+              proxy_server_mode ->
+                let args =
+                  Some
+                    (match proxy_server_mode with
+                    | `Client_rpc_proxy_server -> [Proxy_server.Data_dir]
+                    | `Client_data_dir_proxy_server -> [])
+                in
+                let* proxy_server = Proxy_server.init ?args node in
                 return Client.(Proxy_server proxy_server)
           in
           let* _ = rpc ?endpoint:(Some endpoint) client in
@@ -1054,7 +1062,8 @@ let register () =
          ]
         @
         match test_mode_tag with
-        | `Client_with_proxy_server | `Light -> []
+        | `Client_rpc_proxy_server | `Client_data_dir_proxy_server | `Light ->
+            []
         | _ ->
             [
               ( "mempool",
@@ -1085,7 +1094,8 @@ let register () =
          ]
         @
         match test_mode_tag with
-        | `Client_with_proxy_server | `Light -> []
+        | `Client_rpc_proxy_server | `Client_data_dir_proxy_server | `Light ->
+            []
         | _ ->
             [
               ( "mempool",
@@ -1095,7 +1105,15 @@ let register () =
             ])
       ()
   in
-  let modes = [`Client; `Light; `Proxy; `Client_with_proxy_server] in
+  let modes =
+    [
+      `Client;
+      `Light;
+      `Proxy;
+      `Client_rpc_proxy_server;
+      `Client_data_dir_proxy_server;
+    ]
+  in
 
   List.iter
     (fun mode ->
