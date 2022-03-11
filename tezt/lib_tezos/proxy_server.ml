@@ -27,6 +27,11 @@ type argument =
   (* If you're considering adding [--endpoint] and [--rpc-addr],
      beware that, for the moment, they are automatically computed in
      {!create} below *)
+  | Data_dir
+      (** We don't need a parameter to {!Data_dir}, because it is computed
+          automatically from the {!Node.t} value in {!create} below. Think
+          of this argument as a Boolean flag (not an argument) whether to pass
+          [--data-dir] to [tezos-proxy-server]. *)
   | Symbolic_block_caching_time of int
 
 module Parameters = struct
@@ -69,6 +74,7 @@ let create ?runner ?name ?rpc_port ?(args = []) node =
   let user_arguments =
     List.map
       (function
+        | Data_dir -> ["--data-dir"; Node.data_dir node]
         | Symbolic_block_caching_time s ->
             ["--sym-block-caching-time"; Int.to_string s])
       args
