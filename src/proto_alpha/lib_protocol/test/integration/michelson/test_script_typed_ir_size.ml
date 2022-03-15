@@ -353,9 +353,9 @@ module Tests = struct
   let check_lambda_size_stats () =
     check_stats
       "lambda_size"
-      ~expected_mean:(1., 0.35)
+      ~expected_mean:(1.3, 0.35)
       ~expected_stddev:(0., 0.1)
-      ~expected_ratios:(1., 0.4)
+      ~expected_ratios:(1.4, 0.4)
 end
 
 let tests =
