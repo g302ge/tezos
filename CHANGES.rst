@@ -102,6 +102,10 @@ Signer
 Proxy server
 ------------
 
+- A new ``--data-dir`` option was added. It expects the path of the data-dir
+  of the node from which to obtain data. This option greatly reduces the number of RPCs that
+  the proxy server does to the node, hereby reducing IO consumption of the node.
+
 Protocol Compiler And Environment
 ---------------------------------
 
