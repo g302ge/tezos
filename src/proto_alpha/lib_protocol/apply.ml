@@ -1653,14 +1653,27 @@ let apply_external_manager_operation_content :
   | Tx_rollup_finalize_commitment {tx_rollup} ->
       Tx_rollup_state.get ctxt tx_rollup >>=? fun (ctxt, state) ->
       Tx_rollup_commitment.finalize_commitment ctxt tx_rollup state
-      >>=? fun (ctxt, state, level, _to_reward) ->
-      (* TODO/TORU: reward successful prerejections *)
+      >>=? fun (ctxt, state, level, to_reward) ->
+      let burn = Constants.tx_rollup_commitment_bond ctxt in
+      Tez.(burn /? 2L) >>?= fun reward ->
+      List.fold_left_es
+        (fun (ctxt, acc) accuser ->
+          let accuser = Contract.implicit_contract accuser in
+          Token.transfer
+            ctxt
+            `Tx_rollup_rejection_rewards
+            (`Contract accuser)
+            reward
+          >>=? fun (ctxt, updates) -> return (ctxt, List.append acc updates))
+        (ctxt, [])
+        to_reward
+      >>=? fun (ctxt, balance_updates) ->
       Tx_rollup_state.update ctxt tx_rollup state >>=? fun ctxt ->
       let result =
         Tx_rollup_finalize_commitment_result
           {
             consumed_gas = Gas.consumed ~since:before_operation ~until:ctxt;
-            balance_updates = [];
+            balance_updates;
             level;
           }
       in
@@ -1780,21 +1793,12 @@ let apply_external_manager_operation_content :
             let bid = Bond_id.Tx_rollup_bond_id tx_rollup in
             Token.balance ctxt (`Frozen_bonds (source, bid))
             >>=? fun (ctxt, burn) ->
-            Tez.(burn /? 2L) >>?= fun reward ->
-            let accuser = Contract.implicit_contract payer in
             Token.transfer
               ctxt
               (`Frozen_bonds (source, bid))
               `Tx_rollup_rejection_punishments
               burn
-            >>=? fun (ctxt, burn_update) ->
-            Token.transfer
-              ctxt
-              `Tx_rollup_rejection_rewards
-              (`Contract accuser)
-              reward
-            >>=? fun (ctxt, reward_update) ->
-            return (ctxt, burn_update @ reward_update)
+            >>=? fun (ctxt, burn_update) -> return (ctxt, burn_update)
            else return (ctxt, []))
            >>=? fun (ctxt, balance_updates) ->
            (* Update state and conclude *)
