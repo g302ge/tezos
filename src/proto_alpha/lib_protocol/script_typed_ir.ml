@@ -461,6 +461,8 @@ and 'arg nested_entrypoints =
 
 let no_entrypoints = {name = None; nested = Entrypoints_None}
 
+type ('a, 's) kinfo = {iloc : Script.location} [@@ocaml.unboxed]
+
 (* ---- Instructions --------------------------------------------------------*)
 type ('before_top, 'before, 'result_top, 'result) kinstr =
   (*
@@ -1312,8 +1314,6 @@ and ('a, 's, 'r, 'f) kdescr = {
   kaft : ('r, 'f) stack_ty;
   kinstr : ('a, 's, 'r, 'f) kinstr;
 }
-
-and ('a, 's) kinfo = {iloc : Script.location}
 
 and (_, _, _, _, _, _, _, _) stack_prefix_preservation_witness =
   | KPrefix :
@@ -2180,6 +2180,7 @@ type kinstr_rewritek = {
 }
 
 type ('a, 's) failed_kinstr_cast = {cast : 'b 'u. ('a, 's, 'b, 'u) kinstr}
+[@@ocaml.unboxed]
 
 type ('a, 's, 'r, 'f) ex_splitted_kinstr =
   | Ex_splitted_kinstr :

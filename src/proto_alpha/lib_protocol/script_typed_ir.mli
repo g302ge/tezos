@@ -328,6 +328,8 @@ and 'arg nested_entrypoints =
 (** [no_entrypoints] is [{name = None; nested = Entrypoints_None}] *)
 val no_entrypoints : _ entrypoints
 
+type ('a, 's) kinfo = {iloc : Script.location} [@@ocaml.unboxed]
+
 (* ---- Instructions --------------------------------------------------------*)
 
 (*
@@ -1416,8 +1418,6 @@ and ('a, 's, 'r, 'f) kdescr = {
   kaft : ('r, 'f) stack_ty;
   kinstr : ('a, 's, 'r, 'f) kinstr;
 }
-
-and ('a, 's) kinfo = {iloc : Script.location}
 
 (*
 
