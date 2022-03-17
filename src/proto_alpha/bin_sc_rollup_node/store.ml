@@ -192,3 +192,25 @@ module Histories = Make_append_only_map (struct
 
   let value_encoding = Inbox.history_encoding
 end)
+
+module Commitments = Make_append_only_map (struct
+  let path = ["commitments"]
+
+  let keep_last_n_entries_in_memory = 10
+
+  type key = Raw_level.t
+
+  let string_of_key l = Int32.to_string @@ Raw_level.to_int32 l
+
+  type value = Sc_rollup.Commitment.t
+
+  let value_encoding = Sc_rollup.Commitment.encoding
+end)
+
+module Last_commitment_level = Make_mutable_value (struct
+  let path = ["last_commitment_level"]
+
+  type value = Raw_level.t
+
+  let value_encoding = Raw_level.encoding
+end)
