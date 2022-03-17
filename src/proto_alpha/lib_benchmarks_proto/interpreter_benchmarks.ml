@@ -1286,7 +1286,6 @@ module Registration_section = struct
     let kmap_iter_code =
       IMap_iter
         ( dummy_kinfo (),
-          int,
           cpair int unit,
           IDrop (dummy_kinfo (), halt ()),
           halt () )

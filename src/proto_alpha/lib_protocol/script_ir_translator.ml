@@ -3748,11 +3748,11 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
           error (Invalid_map_body (loc, aft))
       | Failed _ -> error (Invalid_map_block_fail loc))
   | ( Prim (loc, I_ITER, [body], annot),
-      Item_t (Map_t (comp_elt, element_ty, _), rest) ) -> (
+      Item_t (Map_t (comp_elt, val_ty, _), rest) ) -> (
       check_kind [Seq_kind] body >>?= fun () ->
       error_unexpected_annot loc annot >>?= fun () ->
-      let key = ty_of_comparable_ty comp_elt in
-      pair_t loc key element_ty >>?= fun (Ty_ex_c ty) ->
+      let key_ty = ty_of_comparable_ty comp_elt in
+      pair_t loc key_ty val_ty >>?= fun (Ty_ex_c ty) ->
       non_terminal_recursion
         ?type_logger
         tc_context
@@ -3768,7 +3768,7 @@ and[@coq_axiom_with_reason "gadt"] parse_instr :
               let hinfo = {iloc = loc} in
               let binfo = kinfo_of_descr ibody in
               let ibody = ibody.instr.apply binfo (IHalt hinfo) in
-              IMap_iter (kinfo, key, ty, ibody, k));
+              IMap_iter (kinfo, ty, ibody, k));
         }
       in
       Lwt.return

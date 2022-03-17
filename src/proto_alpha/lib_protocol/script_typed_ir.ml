@@ -606,7 +606,6 @@ type ('before_top, 'before, 'result_top, 'result) kinstr =
       -> (('a, 'b) map, 'd * 's, 'r, 'f) kinstr
   | IMap_iter :
       (('a, 'b) map, 'c * 's) kinfo
-      * 'a ty
       * ('a * 'b) ty
       * ('a * 'b, 'c * 's, 'c, 's) kinstr
       * ('c, 's, 'r, 'f) kinstr
@@ -1444,7 +1443,7 @@ let kinfo_of_kinstr : type a s b f. (a, s, b, f) kinstr -> (a, s) kinfo =
   | ISet_size (kinfo, _) -> kinfo
   | IEmpty_map (kinfo, _, _, _) -> kinfo
   | IMap_map (kinfo, _, _, _) -> kinfo
-  | IMap_iter (kinfo, _, _, _, _) -> kinfo
+  | IMap_iter (kinfo, _, _, _) -> kinfo
   | IMap_mem (kinfo, _) -> kinfo
   | IMap_get (kinfo, _) -> kinfo
   | IMap_update (kinfo, _) -> kinfo
@@ -1837,7 +1836,7 @@ let kinstr_traverse i init f =
     | ISet_size (_, k) -> (next [@ocaml.tailcall]) k
     | IEmpty_map (_, _, _, k) -> (next [@ocaml.tailcall]) k
     | IMap_map (_, _, k1, k2) -> (next2 [@ocaml.tailcall]) k1 k2
-    | IMap_iter (_, _, _, k1, k2) -> (next2 [@ocaml.tailcall]) k1 k2
+    | IMap_iter (_, _, k1, k2) -> (next2 [@ocaml.tailcall]) k1 k2
     | IMap_mem (_, k) -> (next [@ocaml.tailcall]) k
     | IMap_get (_, k) -> (next [@ocaml.tailcall]) k
     | IMap_update (_, k) -> (next [@ocaml.tailcall]) k
@@ -2395,15 +2394,14 @@ let kinstr_split :
           k,
           (fun (Item_t (b, s)) -> map_t loc kty b >|? fun m -> Item_t (m, s)),
           fun body k -> IMap_map (kinfo, key_ty, body, k) )
-  | (IMap_iter (kinfo, key_ty, pair_ty, body, k), Item_t (_, s)) ->
-      let s' = Item_t (pair_ty, s) in
+  | (IMap_iter (kinfo, kvty, body, k), Item_t (_, stack)) ->
       ok
       @@ Ex_splitted_loop_may_fail
-           ( s',
+           ( Item_t (kvty, stack),
              body,
-             s,
+             stack,
              k,
-             fun body k -> IMap_iter (kinfo, key_ty, pair_ty, body, k) )
+             fun body k -> IMap_iter (kinfo, kvty, body, k) )
   | (IMap_mem (kinfo, k), Item_t (_, Item_t (_, s))) ->
       let s = Item_t (bool_t, s) in
       ok @@ Ex_splitted_kinstr (s, k, fun k -> IMap_mem (kinfo, k))
