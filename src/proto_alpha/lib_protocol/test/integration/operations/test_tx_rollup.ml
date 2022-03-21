@@ -3888,39 +3888,48 @@ module Withdraw = struct
 
     (* 4. Now execute the withdrawal. The ticket should be received
        by withdraw_contract at the default entrypoint. *)
-    (let entrypoint = Entrypoint.default in
-     let context_hash =
-       WithExceptions.Option.get ~loc:__LOC__ @@ List.nth context_hash_list 0
-     in
-     let withdrawals_list = [withdraw] in
-     let withdraw_position = 0 in
-     wrap
-     @@ Tx_rollup_withdraw.Merkle.compute_path
-          withdrawals_list
-          withdraw_position
-     >>?= fun withdraw_path ->
-     let withdrawals_merkle_root =
-       Tx_rollup_withdraw.Merkle.merklize_list withdrawals_list
-     in
-     Op.tx_rollup_withdraw
-       (B b)
-       ~source:account1
-       tx_rollup
-       Tx_rollup_level.root
-       ~context_hash
-       ~contents:(Script.lazy_expr contents)
-       ~ty:(Script.lazy_expr ty)
-       ~ticketer:deposit_contract
-       amount
-       ~destination:withdraw_contract
-       withdrawals_merkle_root
-       withdraw_path
-       ~withdraw_position
-       ~message_index:1
-       entrypoint)
-    >>=? fun operation ->
+    let entrypoint = Entrypoint.default in
+    let context_hash =
+      WithExceptions.Option.get ~loc:__LOC__ @@ List.nth context_hash_list 0
+    in
+    let withdrawals_list = [withdraw] in
+    let withdraw_position = 0 in
+    wrap
+    @@ Tx_rollup_withdraw.Merkle.compute_path withdrawals_list withdraw_position
+    >>?= fun withdraw_path ->
+    let withdrawals_merkle_root =
+      Tx_rollup_withdraw.Merkle.merklize_list withdrawals_list
+    in
+    let withdraw message_index =
+      Op.tx_rollup_withdraw
+        (B b)
+        ~source:account1
+        tx_rollup
+        Tx_rollup_level.root
+        ~context_hash
+        ~contents:(Script.lazy_expr contents)
+        ~ty:(Script.lazy_expr ty)
+        ~ticketer:deposit_contract
+        amount
+        ~destination:withdraw_contract
+        withdrawals_merkle_root
+        withdraw_path
+        ~withdraw_position
+        ~message_index
+        entrypoint
+    in
+    withdraw 1 >>=? fun operation ->
     Incremental.begin_construction b >>=? fun i ->
     (* 5. try with wrong message_index *)
+    Incremental.add_operation
+      ~expect_failure:(check_proto_error Tx_rollup_errors.Withdraw_invalid_path)
+      i
+      operation
+    >>=? fun _i ->
+    withdraw 1_000_000_000 >>=? fun operation ->
+    Incremental.begin_construction b >>=? fun i ->
+    (* 5. try with a hilariously-large message_index.  If permitted,
+       this could cause a stack overflow. *)
     Incremental.add_operation
       ~expect_failure:(check_proto_error Tx_rollup_errors.Withdraw_invalid_path)
       i
