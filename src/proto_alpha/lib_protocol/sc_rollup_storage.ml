@@ -293,6 +293,8 @@ let add_messages ctxt rollup messages =
   assert_inbox_size_ok ctxt next_size >>=? fun () ->
   Sc_rollup_in_memory_inbox.current_messages ctxt rollup
   |> fun current_messages ->
+  let gas_cost = Sc_rollup_costs.cost_add_messages messages in
+  Raw_context.consume_gas ctxt gas_cost >>?= fun ctxt ->
   let {Level_repr.level; _} = Raw_context.current_level ctxt in
   (*
       Notice that the protocol is forgetful: it throws away the inbox

@@ -82,7 +82,7 @@ This sequence of operations was run:
     From: [PUBLIC_KEY_HASH]
     Fee to the baker: ꜩ0.000458
     Expected counter: 3
-    Gas limit: 1721
+    Gas limit: 1722
     Storage limit: 0 bytes
     Balance updates:
       [PUBLIC_KEY_HASH] ... -ꜩ0.000458
