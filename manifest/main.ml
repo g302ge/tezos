@@ -1625,9 +1625,9 @@ let _tezos_protocol_environment_tests =
         tezos_base_unix;
         tezos_protocol_environment |> open_;
         alcotest_lwt;
-        tezos_test_helpers;
         qcheck_alcotest;
         lwt_unix;
+        tezos_test_helpers |> open_;
       ]
 
 let _tezos_protocol_shell_context_tests =
