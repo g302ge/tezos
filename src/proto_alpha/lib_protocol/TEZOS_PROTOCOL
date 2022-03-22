@@ -164,6 +164,7 @@
         "Ticket_accounting",
 
         "Script_interpreter_defs",
+        "Script_interpreter_logging",
         "Script_interpreter",
         "Sc_rollup_operations",
         "Sc_rollup_PVM_sem",

@@ -178,6 +178,7 @@ module CamlinternalFormatBasics = struct include CamlinternalFormatBasics end
    ticket_operations_diff.mli ticket_operations_diff.ml
    ticket_accounting.mli ticket_accounting.ml
    script_interpreter_defs.ml
+   script_interpreter_logging.mli script_interpreter_logging.ml
    script_interpreter.mli script_interpreter.ml
    sc_rollup_operations.mli sc_rollup_operations.ml
    sc_rollup_PVM_sem.ml
@@ -353,6 +354,7 @@ module CamlinternalFormatBasics = struct include CamlinternalFormatBasics end
    ticket_operations_diff.mli ticket_operations_diff.ml
    ticket_accounting.mli ticket_accounting.ml
    script_interpreter_defs.ml
+   script_interpreter_logging.mli script_interpreter_logging.ml
    script_interpreter.mli script_interpreter.ml
    sc_rollup_operations.mli sc_rollup_operations.ml
    sc_rollup_PVM_sem.ml
@@ -528,6 +530,7 @@ module CamlinternalFormatBasics = struct include CamlinternalFormatBasics end
    ticket_operations_diff.mli ticket_operations_diff.ml
    ticket_accounting.mli ticket_accounting.ml
    script_interpreter_defs.ml
+   script_interpreter_logging.mli script_interpreter_logging.ml
    script_interpreter.mli script_interpreter.ml
    sc_rollup_operations.mli sc_rollup_operations.ml
    sc_rollup_PVM_sem.ml
@@ -725,6 +728,7 @@ include Tezos_raw_protocol_alpha.Main
    Ticket_operations_diff
    Ticket_accounting
    Script_interpreter_defs
+   Script_interpreter_logging
    Script_interpreter
    Sc_rollup_operations
    Sc_rollup_PVM_sem
@@ -941,6 +945,7 @@ include Tezos_raw_protocol_alpha.Main
    ticket_operations_diff.mli ticket_operations_diff.ml
    ticket_accounting.mli ticket_accounting.ml
    script_interpreter_defs.ml
+   script_interpreter_logging.mli script_interpreter_logging.ml
    script_interpreter.mli script_interpreter.ml
    sc_rollup_operations.mli sc_rollup_operations.ml
    sc_rollup_PVM_sem.ml

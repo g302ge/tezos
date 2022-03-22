@@ -1553,23 +1553,6 @@ val manager_kind : 'kind manager_operation -> 'kind Kind.manager
 
 val kinfo_of_kinstr : ('a, 's, 'b, 'f) kinstr -> ('a, 's) kinfo
 
-type kinstr_rewritek = {
-  apply :
-    'b 'u 'r 'f.
-    ('b, 'u) stack_ty -> ('b, 'u, 'r, 'f) kinstr -> ('b, 'u, 'r, 'f) kinstr;
-}
-
-val kinstr_rewritek :
-  ('a, 's) stack_ty ->
-  ('a, 's, 'r, 'f) kinstr ->
-  kinstr_rewritek ->
-  ('a, 's, 'r, 'f) kinstr tzresult
-
-val kinstr_final_stack_type :
-  ('a, 's) stack_ty ->
-  ('a, 's, 'r, 'f) kinstr ->
-  ('r, 'f) stack_ty option tzresult
-
 val ty_size : 'a ty -> 'a Type_size.t
 
 val comparable_ty_size : 'a comparable_ty -> 'a Type_size.t
