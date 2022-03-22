@@ -161,20 +161,50 @@ let main_promise (config_file : string option)
       `Mode_proxy
       None
   in
-  let*! (context_index : Tezos_context.Context.index option) =
-    Option.map_s
+  (* This should probably be extracted into Lwt_result or similar. *)
+  let lift_lwt (a : 'a Lwt.t) : 'a tzresult Lwt.t =
+    let*! r = a in
+    return r
+  in
+  (* The context index, which we try to read if and only if the --data-dir *)
+  (* argument has been passed. *)
+  let* (context_index : Tezos_context.Context.index option) =
+    Option.map_es
       (fun data_dir ->
         let context_path = Filename.concat data_dir "context" in
-        Tezos_shell_context.Proxy_delegate_maker.make_index ~context_path)
+        Lwt.catch
+          (fun () ->
+            lift_lwt
+              (Tezos_shell_context.Proxy_delegate_maker.make_index
+                 ~context_path))
+          (function
+            | Index_unix__Raw.Not_written ->
+                failwith
+                  "error reading data-dir: %s is not a valid context directory"
+                  context_path
+            | Unix.Unix_error (Unix.EBADF, _, _) ->
+                failwith
+                  "error reading data-dir: %s does not exist"
+                  context_path
+            | e ->
+                failwith
+                  "unexpected error %s while reading context directory %s"
+                  (Printexc.to_string e)
+                  context_path))
       data_dir_opt
   in
-  let on_disk_proxy_builder (index : Tezos_context.Context.index)
-      (ctx_hash : Context_hash.t) : Proxy_delegate.t tzresult Lwt.t =
-    let open Lwt_syntax in
-    let* () = Tezos_context.Context.sync index in
-    Tezos_shell_context.Proxy_delegate_maker.of_index ~index ctx_hash
+  (* Now we build the function that the proxy server can use to build a proxy *)
+  (* delegate later, using [Tezos_shell_context.Proxy_delegate_maker.*] functions. *)
+  (* This lets it not depend directly on [Tezos_shell_context]: if it did, it *)
+  (* would break compilation of tezos-client to JavaScript. *)
+  let on_disk_proxy_builder =
+    Option.map
+      (fun index ctx_hash ->
+        (* Sync first so we don't observe a stale state. *)
+        let*! () = Tezos_context.Context.sync index in
+        Tezos_shell_context.Proxy_delegate_maker.of_index ~index ctx_hash)
+      context_index
   in
-  let on_disk_proxy_builder = Option.map on_disk_proxy_builder context_index in
   let dir =
     let sleep = Lwt_unix.sleep in
     Tezos_proxy.Proxy_services.build_directory
