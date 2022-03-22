@@ -60,21 +60,6 @@ let is_implicit_exn x =
   | Some x -> x
   | None -> raise (Invalid_argument "is_implicit_exn")
 
-(** [test_disable_feature_flag] try to originate a tx rollup with the feature
-    flag is deactivated and check it fails *)
-let test_disable_feature_flag () =
-  Context.init 1 >>=? fun (b, contracts) ->
-  let contract =
-    WithExceptions.Option.get ~loc:__LOC__ @@ List.nth contracts 0
-  in
-  Incremental.begin_construction b >>=? fun i ->
-  Op.tx_rollup_origination (I i) contract >>=? fun (op, _tx_rollup) ->
-  Incremental.add_operation
-    ~expect_apply_failure:(check_proto_error Apply.Tx_rollup_feature_disabled)
-    i
-    op
-  >>=? fun _i -> return_unit
-
 (** [parsing_tests] try originating contracts using the
     type [tx_rollup_l2_address], test that it only works
     when rollups are enabled.
@@ -4074,10 +4059,6 @@ end
 
 let tests =
   [
-    Tztest.tztest
-      "check feature flag is disabled"
-      `Quick
-      test_disable_feature_flag;
     Tztest.tztest "check tx rollup origination and burn" `Quick test_origination;
     Tztest.tztest
       "check two originated tx rollup in one operation have different address"
