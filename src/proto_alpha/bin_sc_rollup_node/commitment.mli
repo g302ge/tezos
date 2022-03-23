@@ -34,9 +34,17 @@
 *)
 open Protocol
 
+open Alpha_context
+
 (** [get_last_commitment_level store] returns the level at which the last commitment 
 was published. *)
-val get_last_commitment_level : Store.t -> Raw_level.t tzresult Lwt.t
+val get_last_commitment_level : Store.t -> Raw_level.t Lwt.t
 
-val update_last_commitment :
-  Store.t -> Sc_rollup.Commitment.t -> unit tzresult Lwt.t
+val update_last_commitment : Store.t -> Sc_rollup.Commitment.t -> unit Lwt.t
+
+(** [start store rollup] initializes the inbox to track the messages published for
+    the given [rollup]. *)
+val start :
+  Protocol_client_context.full ->
+  Alpha_context.Sc_rollup.t ->
+  unit tzresult Lwt.t

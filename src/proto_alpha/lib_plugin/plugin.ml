@@ -2957,7 +2957,7 @@ module RPC = struct
         RPC_service.get_service
           ~description:"Initial level for a smart-contract rollup"
           ~query:RPC_query.empty
-          ~output:Raw_level_repr.encoding
+          ~output:Raw_level.encoding
           RPC_path.(path /: Sc_rollup.Address.rpc_arg / "initial_level")
 
       let root =
@@ -3002,7 +3002,7 @@ module RPC = struct
     let list ctxt block = RPC_context.make_call0 S.root ctxt block () ()
 
     let initial_level ctxt block sc_rollup_address =
-      RPC_context.make_call1 S.initial_level ctxt block sc_rollup_address ()
+      RPC_context.make_call1 S.initial_level ctxt block sc_rollup_address () ()
   end
 
   module Forge = struct

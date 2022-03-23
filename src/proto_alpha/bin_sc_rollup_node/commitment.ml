@@ -34,10 +34,44 @@
 *)
 open Protocol
 
-(** [get_last_commitment_level store] returns the level at which the last commitment 
-was published. *)
+open Alpha_context
+
+module State = struct
+  (* TODO: copied from Inbox, move to a shared state between modules? *)
+  let unstarted_failure () =
+    Format.eprintf "Sc rollup node inbox is not started.\n" ;
+    Lwt_exit.exit_and_raise 1
+
+  let (set_sc_rollup_address, _get_sc_rollup_address) =
+    let sc_rollup_address = ref None in
+    ( (fun x -> sc_rollup_address := Some x),
+      fun () ->
+        match !sc_rollup_address with
+        | None -> unstarted_failure ()
+        | Some a -> a )
+
+  let (set_sc_rollup_initial_level, _get_sc_rollup_initial_level) =
+    let sc_rollup_initial_level = ref None in
+    ( (fun x -> sc_rollup_initial_level := Some x),
+      fun () ->
+        match !sc_rollup_initial_level with
+        | None -> unstarted_failure ()
+        | Some a -> a )
+end
+
 let get_last_commitment_level store = Store.Last_commitment_level.get store
 
 let update_last_commitment store (commitment : Sc_rollup.Commitment.t) =
-  let level = commitment.inbox_level in
+  let inbox_level = commitment.inbox_level in
   Store.Commitments.add store inbox_level commitment
+
+let start (cctxt : Protocol_client_context.full) sc_rollup_address =
+  let open Lwt_tzresult_syntax in
+  State.set_sc_rollup_address sc_rollup_address ;
+  let+ initial_level =
+    Plugin.RPC.Sc_rollup.initial_level
+      cctxt
+      (cctxt#chain, cctxt#block)
+      sc_rollup_address
+  in
+  State.set_sc_rollup_initial_level initial_level

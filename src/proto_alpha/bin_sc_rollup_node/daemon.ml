@@ -57,6 +57,7 @@ let run ~data_dir (cctxt : Protocol_client_context.full) =
     let*! store = Store.load configuration in
     let* tezos_heads = Layer1.start configuration cctxt store in
     let*! () = Inbox.start store sc_rollup_address in
+    let* () = Commitment.start cctxt sc_rollup_address in
     let* rpc_server = RPC_server.start store configuration in
     let _ = install_finalizer store rpc_server in
     let*! () = Event.node_is_ready ~rpc_addr ~rpc_port in

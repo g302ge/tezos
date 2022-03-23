@@ -2414,7 +2414,7 @@ module Sc_rollup : sig
   module Commitment : sig
     type t = {
       compressed_state : State_hash.t;
-      inbox_level : Raw_level_repr.t;
+      inbox_level : Raw_level.t;
       predecessor : Commitment_hash.t;
       number_of_messages : Number_of_messages.t;
       number_of_ticks : Number_of_ticks.t;
@@ -2554,7 +2554,7 @@ module Sc_rollup : sig
 
   val list : context -> t list tzresult Lwt.t
 
-  val initial_level : context -> t -> Raw_level_repr.t tzresult Lwt.t
+  val initial_level : context -> t -> Raw_level.t tzresult Lwt.t
 end
 
 module Block_payload : sig
