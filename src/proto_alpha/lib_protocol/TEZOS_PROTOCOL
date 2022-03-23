@@ -73,6 +73,7 @@
         "Receipt_repr",
         "Migration_repr",
         "Sc_rollup_tick_repr",
+        "Raw_carbonated_map",
 
         "Raw_context_intf",
         "Raw_context",
