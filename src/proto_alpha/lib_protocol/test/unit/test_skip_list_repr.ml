@@ -166,7 +166,7 @@ let tests =
   [
     Tztest.tztest_qcheck
       ~name:"Skip list: check produced paths for multiple basis."
-      ~count:1_000
+      ~count:1_00
       QCheck.(
         make
           Gen.(
@@ -177,7 +177,7 @@ let tests =
       test_skip_list_nat_check_path;
     Tztest.tztest_qcheck
       ~name:"Skip list: reject invalid paths for multiple basis."
-      ~count:1_000
+      ~count:1_00
       QCheck.(
         make
           Gen.(
