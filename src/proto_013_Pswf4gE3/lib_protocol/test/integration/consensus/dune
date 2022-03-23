@@ -1,0 +1,16 @@
+(test
+ (name main)
+ (package tezos-protocol-013-Pswf4gE3-tests)
+ (libraries alcotest-lwt
+            tezos-base
+            tezos-protocol-013-Pswf4gE3
+            tezos-base-test-helpers
+            tezos-013-Pswf4gE3-test-helpers
+            tezos-protocol-013-Pswf4gE3-parameters
+            tezos-protocol-plugin-013-Pswf4gE3)
+ (flags (:standard -open Tezos_base__TzPervasives
+                   -open Tezos_protocol_013_Pswf4gE3
+                   -open Tezos_013_Pswf4gE3_test_helpers
+                   -open Tezos_base_test_helpers
+                   -open Tezos_protocol_013_Pswf4gE3_parameters
+                   -open Tezos_protocol_plugin_013_Pswf4gE3)))

@@ -1,0 +1,25 @@
+(test
+ (name main)
+ (package tezos-baking-013-Pswf4gE3)
+ (libraries
+  tezos-base
+  tezos-micheline
+  tezos-client-013-Pswf4gE3
+  tezos-protocol-013-Pswf4gE3
+  tezos-protocol-013-Pswf4gE3.environment
+  tezos-base-test-helpers
+  tezos-baking-013-Pswf4gE3.mockup-simulator
+  tezos-baking-013-Pswf4gE3
+  tezos-protocol-013-Pswf4gE3-parameters
+  tezos-crypto
+  alcotest-lwt)
+ (flags
+  (:standard
+   -open Tezos_base.TzPervasives
+   -open Tezos_micheline
+   -open Tezos_client_013_Pswf4gE3
+   -open Tezos_protocol_013_Pswf4gE3
+   -open Tezos_protocol_environment_013_Pswf4gE3
+   -open Tezos_base_test_helpers
+   -open Tezos_013_Pswf4gE3_mockup_simulator
+   -open Tezos_baking_013_Pswf4gE3)))

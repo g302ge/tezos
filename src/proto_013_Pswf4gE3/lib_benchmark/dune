@@ -1,0 +1,26 @@
+(library
+ (name tezos_benchmark_013_Pswf4gE3)
+ (public_name tezos-benchmark-013-Pswf4gE3)
+ (libraries
+  tezos-base
+  tezos-protocol-013-Pswf4gE3
+  tezos-protocol-013-Pswf4gE3-parameters
+  tezos-micheline-rewriting
+  tezos-benchmark
+  tezos-benchmark-type-inference-013-Pswf4gE3
+  hashcons
+  benchmark-utils
+  tezos-013-Pswf4gE3-test-helpers
+  prbnmcn-stats)
+ (library_flags (:standard -linkall))
+ (private_modules kernel rules state_space)
+ (flags (:standard -open Tezos_stdlib
+                   -open Tezos_base
+                   -open Tezos_error_monad
+                   -open Tezos_micheline
+                   -open Tezos_micheline_rewriting
+                   -open Tezos_benchmark
+                   -open Tezos_benchmark_type_inference_013_Pswf4gE3
+                   -open Tezos_protocol_013_Pswf4gE3
+                   -open Tezos_crypto
+                   -open Tezos_013_Pswf4gE3_test_helpers)))

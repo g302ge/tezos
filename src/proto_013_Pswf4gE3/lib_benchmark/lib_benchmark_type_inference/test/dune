@@ -1,0 +1,10 @@
+(tests
+ (names test_uf
+        test_inference)
+ (package tezos-benchmark-type-inference-013-Pswf4gE3)
+ (libraries tezos-micheline tezos-micheline-rewriting
+            tezos-benchmark-type-inference-013-Pswf4gE3 tezos-protocol-013-Pswf4gE3
+            tezos-error-monad tezos-client-013-Pswf4gE3)
+ (flags
+    (:standard -open Tezos_micheline
+               -open Tezos_benchmark_type_inference_013_Pswf4gE3)))

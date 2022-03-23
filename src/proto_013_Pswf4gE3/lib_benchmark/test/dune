@@ -1,0 +1,37 @@
+(executables
+ (names test_sampling_data test_sampling_code test_autocompletion test_distribution)
+ (libraries tezos-micheline
+            tezos-micheline-rewriting
+            tezos-benchmark-type-inference-013-Pswf4gE3
+            tezos-benchmark
+            tezos-benchmark-013-Pswf4gE3
+            tezos-protocol-013-Pswf4gE3
+            tezos-013-Pswf4gE3-test-helpers
+            tezos-error-monad
+            alcotest-lwt
+            prbnmcn-stats)
+;; uncomment to enable gprof profiling
+;; (ocamlopt_flags (:standard -p -ccopt -no-pie))
+ (flags (:standard
+         -open Tezos_micheline
+         -open Tezos_protocol_013_Pswf4gE3
+         -open Tezos_benchmark
+         -open Tezos_benchmark_type_inference_013_Pswf4gE3
+         -open Tezos_benchmark_013_Pswf4gE3
+         -open Tezos_013_Pswf4gE3_test_helpers)))
+
+(rule
+  (alias runtest_micheline_rewriting_data)
+  (action (run %{exe:test_sampling_data.exe} 1234)))
+
+(rule
+  (alias runtest_micheline_rewriting_code)
+  (action (run %{exe:test_sampling_code.exe} 1234)))
+
+
+(alias
+  (name runtest)
+  (package tezos-benchmark-013-Pswf4gE3)
+  (deps (alias runtest_micheline_rewriting_data)
+        (alias runtest_micheline_rewriting_code)
+  ))

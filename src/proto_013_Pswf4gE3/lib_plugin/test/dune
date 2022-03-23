@@ -1,0 +1,24 @@
+(tests
+ (names test_consensus_filter test_filter_state test_plugin)
+ (package tezos-protocol-plugin-013-Pswf4gE3-tests)
+ (libraries tezos-base
+            tezos-base-test-helpers
+            tezos-base.unix
+            alcotest-lwt
+            tezos-test-helpers
+            qcheck-alcotest
+            tezos-stdlib-unix
+            tezos-protocol-013-Pswf4gE3-parameters
+            tezos-protocol-plugin-013-Pswf4gE3
+            tezos-013-Pswf4gE3-test-helpers
+          )
+ (flags (:standard -open Tezos_base__TzPervasives
+                   -open Tezos_base_test_helpers
+                   -open Tezos_micheline
+                   -open Tezos_protocol_013_Pswf4gE3
+                   -open Tezos_protocol_plugin_013_Pswf4gE3
+                   -open Tezos_protocol_environment_013_Pswf4gE3
+                   -open Tezos_protocol_013_Pswf4gE3.Protocol
+                   -open Tezos_protocol_013_Pswf4gE3_parameters
+                   -open Tezos_013_Pswf4gE3_test_helpers
+                  )))

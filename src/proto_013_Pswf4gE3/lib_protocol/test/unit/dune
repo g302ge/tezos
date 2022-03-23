@@ -1,0 +1,22 @@
+(test
+ (name main)
+ (package tezos-protocol-013-Pswf4gE3-tests)
+ (libraries tezos-base
+            tezos-micheline
+            tezos-protocol-environment
+            alcotest-lwt
+            tezos-013-Pswf4gE3-test-helpers
+            tezos-stdlib-unix
+            tezos-client-base
+            tezos-protocol-013-Pswf4gE3-parameters
+            tezos-base-test-helpers)
+ (flags (:standard -open Tezos_base__TzPervasives
+                   -open Tezos_base_test_helpers
+                   -open Tezos_micheline
+                   -open Tezos_client_013_Pswf4gE3
+                   -open Tezos_protocol_013_Pswf4gE3
+                   -open Tezos_protocol_environment_013_Pswf4gE3
+                   -open Tezos_013_Pswf4gE3_test_helpers
+		   -open Tezos_base_test_helpers
+                   -open Tezos_stdlib))
+ (action (run %{test} "test" "Unit")))

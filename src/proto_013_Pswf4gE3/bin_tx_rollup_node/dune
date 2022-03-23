@@ -1,0 +1,36 @@
+; build static executable with --profile static
+(env
+ (static (flags (:standard
+                  -ccopt -static
+                  -cclib "-lusb-1.0 -lhidapi-libusb -ludev"))))
+
+(executable
+ (name main_tx_rollup_node_013_Pswf4gE3)
+ (public_name tezos-tx-rollup-node-013-Pswf4gE3)
+ (instrumentation (backend bisect_ppx))
+ (libraries tezos-base
+            tezos-crypto
+            tezos-client-base
+            tezos-client-base-unix
+            tezos-client-commands
+            tezos-baking-013-Pswf4gE3-commands
+            tezos-rpc
+            tezos-rpc-http
+            tezos-rpc-http-server
+            tezos-context.encoding
+            tezos-micheline
+            irmin-pack
+            irmin-pack.unix
+            irmin)
+ (flags (:standard -open Tezos_base__TzPervasives
+                   -open Tezos_base
+                   -open Tezos_crypto
+                   -open Tezos_protocol_013_Pswf4gE3
+                   -open Tezos_protocol_environment_013_Pswf4gE3
+                   -open Tezos_client_013_Pswf4gE3
+                   -open Tezos_client_commands
+                   -open Tezos_baking_013_Pswf4gE3_commands
+                   -open Tezos_stdlib_unix
+                   -open Tezos_micheline
+                   -open Tezos_client_base
+                   -open Tezos_client_base_unix)))

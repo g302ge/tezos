@@ -99,6 +99,11 @@ ITHACA_DAEMON = "012-Psithaca"
 ITHACA_FOLDER = "proto_012_Psithaca"
 ITHACA_PARAMETERS = get_parameters(ITHACA_FOLDER)
 
+NEXT = "Pswf4gE3Ut2RaxrsHbrfP51BEW4uBTrmR87yuDn4UY9i9nTuwvX"
+NEXT_DAEMON = "013-Pswf4gE3"
+NEXT_FOLDER = "proto_013_Pswf4gE3"
+NEXT_PARAMETERS = get_parameters(NEXT_FOLDER)
+
 TEZOS_CRT = """
 Certificate:
     Data:
