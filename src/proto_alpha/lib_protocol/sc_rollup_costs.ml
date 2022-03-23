@@ -39,6 +39,8 @@ module Constants = struct
   let cost_add_message_base = S.safe_int 430
 
   let cost_add_message_per_byte = S.safe_int 15
+
+  let cost_inbox = S.safe_int 15
 end
 
 (* We assume that the gas cost of adding a message `m` to the

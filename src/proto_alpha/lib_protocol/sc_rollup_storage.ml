@@ -213,6 +213,8 @@ let () =
 module Lwt_tzresult_syntax = struct
   let ( let* ) = ( >>=? )
 
+  let ( let*! ) = ( >>?= )
+
   let return = return
 end
 
@@ -271,6 +273,9 @@ let consume_n_messages ctxt rollup n =
 
 let inbox ctxt rollup =
   let open Lwt_tzresult_syntax in
+  let*! ctxt =
+    Raw_context.consume_gas ctxt Sc_rollup_costs.Constants.cost_inbox
+  in
   let* (ctxt, res) = Storage.Sc_rollup.Inbox.find ctxt rollup in
   match res with
   | None -> fail (Sc_rollup_does_not_exist rollup)

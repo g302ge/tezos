@@ -30,6 +30,8 @@ module Constants : sig
   val cost_add_message_base : Gas_limit_repr.cost
 
   val cost_add_message_per_byte : Gas_limit_repr.cost
+
+  val cost_inbox : Gas_limit_repr.cost
 end
 
 (** [cost_add_messages] returns the cost of encoding and hashing messages,
