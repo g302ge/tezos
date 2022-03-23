@@ -25,9 +25,15 @@
 
 open Protocol.Alpha_context
 module Maker = Irmin_pack_unix.Maker (Tezos_context_encoding.Context.Conf)
-module IStore = Maker.Make (Tezos_context_encoding.Context.Schema)
+
+module IStore = struct
+  include Maker.Make (Tezos_context_encoding.Context.Schema)
+  module Schema = Tezos_context_encoding.Context.Schema
+end
 
 type t = IStore.t
+
+type tree = IStore.tree
 
 type path = string list
 
@@ -116,10 +122,7 @@ module IStoreTree = struct
   include
     Tezos_context_helpers.Context.Make_tree
       (Tezos_context_encoding.Context.Conf)
-      (struct
-        include IStore
-        module Schema = Tezos_context_encoding.Context.Schema
-      end)
+      (IStore)
 
   type t = IStore.t
 
@@ -130,7 +133,30 @@ module IStoreTree = struct
   type value = bytes
 end
 
-module Inbox = Sc_rollup.Inbox.MakeHashingScheme (IStoreTree)
+module IStoreProof =
+  Tezos_context_helpers.Context.Make_proof
+    (IStore)
+    (Tezos_context_encoding.Context.Conf)
+
+module Inbox = struct
+  include Sc_rollup.Inbox
+  include Sc_rollup.Inbox.MakeHashingScheme (IStoreTree)
+end
+
+module PVMState = struct
+  let key block_hash = ["pvm_state"; Block_hash.to_b58check block_hash]
+
+  let find store block_hash = IStore.find_tree store (key block_hash)
+
+  let exists store block_hash = IStore.mem store (key block_hash)
+
+  let set store block_hash state =
+    IStore.set_tree_exn
+      ~info:(fun () -> info "Update PVM state")
+      store
+      (key block_hash)
+      state
+end
 
 module MessageTrees = struct
   let key block_hash = ["message_tree"; Block_hash.to_b58check block_hash]
@@ -150,6 +176,29 @@ module MessageTrees = struct
       (key block_hash)
       message_tree
 end
+
+type state_info = {num_messages : Int32.t; num_ticks : Int32.t}
+
+module StateInfo = Make_append_only_map (struct
+  let path = ["state_info"]
+
+  let keep_last_n_entries_in_memory = 6000
+
+  type key = Block_hash.t
+
+  let string_of_key = Block_hash.to_b58check
+
+  type value = state_info
+
+  let value_encoding =
+    let open Data_encoding in
+    conv
+      (fun {num_messages; num_ticks} -> (num_messages, num_ticks))
+      (fun (num_messages, num_ticks) -> {num_messages; num_ticks})
+      (obj2
+         (req "num_messages" Data_encoding.int32)
+         (req "num_ticks" Data_encoding.int32))
+end)
 
 module Messages = Make_append_only_map (struct
   let path = ["messages"]
