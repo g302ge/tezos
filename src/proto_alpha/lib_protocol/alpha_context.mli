@@ -2449,6 +2449,8 @@ module Sc_rollup : sig
 
     val empty : Address.t -> Raw_level.t -> t
 
+    val inbox_level : t -> Raw_level.t
+
     val number_of_available_messages : t -> Z.t
 
     val consume_n_messages : int -> t -> t option tzresult
