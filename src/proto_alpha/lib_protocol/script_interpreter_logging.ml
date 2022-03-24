@@ -33,11 +33,11 @@ type kinstr_rewritek = {
 }
 
 (* An existential wrapper around failed [kinstr], whose final stack type
-   is hidden as irrelevant. *)
+   is hidden as it is irrelevant. *)
 type ('a, 's) failed_kinstr_cast = {cast : 'b 'u. ('a, 's, 'b, 'u) kinstr}
 [@@ocaml.unboxed]
 
-(* This is a view on a deconstructed [kinstr]. It's type parameters refer to
+(* This is a view on a deconstructed [kinstr]. Its type parameters refer to
    the type of the viewed [kinstr], while existentials inside describe types of
    [kinstr]'s components. The [reconstruct] field in each record stores a
    function which reconstructs the original instruction from its components. *)
