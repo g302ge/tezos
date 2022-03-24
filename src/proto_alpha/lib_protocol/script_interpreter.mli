@@ -52,8 +52,10 @@ type error += Michelson_too_many_recursive_calls
 
 (** The result from script interpretation.
 
-  Note that [events] is a list of events emitted in a {i:reversed} chronological order.
-  Consumers of this struct should reverse the [events] list before interpreting it.
+  Note that [events] is a list of events emitted in a
+  {i reversed} chronological order.
+  Consumers of this struct should reverse the
+  [events] list before interpreting it.
   *)
 type execution_result = {
   script : Script_ir_translator.ex_script;

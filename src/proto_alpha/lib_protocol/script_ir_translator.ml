@@ -5953,7 +5953,17 @@ and[@coq_axiom_with_reason "gadt"] unparse_code ctxt ~stack_depth mode code =
    Refactor the sharing part of unparse_script and create_contract *)
 let unparse_script ctxt mode
     (Ex_script
-      (Script {code; arg_type; storage; storage_type; entrypoints; views; _})) =
+      (Script
+        {
+          code;
+          arg_type;
+          storage;
+          storage_type;
+          entrypoints;
+          views;
+          event_type;
+          code_size = _;
+        })) =
   let (Lam (_, original_code)) = code in
   Gas.consume ctxt Unparse_costs.unparse_script >>?= fun ctxt ->
   unparse_code ctxt ~stack_depth:0 mode original_code >>=? fun (code, ctxt) ->
@@ -5964,6 +5974,11 @@ let unparse_script ctxt mode
      unparse_parameter_ty ~loc ctxt arg_type ~entrypoints
      >>? fun (arg_type, ctxt) ->
      unparse_ty ~loc ctxt storage_type >>? fun (storage_type, ctxt) ->
+     (match event_type with
+     | No_event_ty -> ok (None, ctxt)
+     | Some_event_ty ty ->
+         unparse_ty ~loc ctxt ty >>? fun (ty, ctxt) -> ok (Some ty, ctxt))
+     >>? fun (event_type, ctxt) ->
      let open Micheline in
      let unparse_view_unaccounted name {input_ty; output_ty; view_code} views =
        Prim
@@ -5986,6 +6001,11 @@ let unparse_script ctxt mode
        (views, ctxt)
      in
      unparse_views views >>? fun (views, ctxt) ->
+     let event =
+       match event_type with
+       | Some ty -> [Prim (loc, K_event, [ty], [])]
+       | None -> []
+     in
      let code =
        Seq
          ( loc,
@@ -5994,7 +6014,7 @@ let unparse_script ctxt mode
              Prim (loc, K_storage, [storage_type], []);
              Prim (loc, K_code, [code], []);
            ]
-           @ views )
+           @ event @ views )
      in
      Gas.consume ctxt (Script.strip_locations_cost code) >>? fun ctxt ->
      Gas.consume ctxt (Script.strip_locations_cost storage) >|? fun ctxt ->
