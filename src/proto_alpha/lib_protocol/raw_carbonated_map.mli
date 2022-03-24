@@ -1,7 +1,7 @@
 (*****************************************************************************)
 (*                                                                           *)
 (* Open Source License                                                       *)
-(* Copyright (c) 2021 Trili Tech, <contact@trili.tech>                       *)
+(* Copyright (c) 2022 Trili Tech, <contact@trili.tech>                       *)
 (*                                                                           *)
 (* Permission is hereby granted, free of charge, to any person obtaining a   *)
 (* copy of this software and associated documentation files (the "Software"),*)
@@ -26,6 +26,7 @@
 (** An in-memory data-structure for a key-value map where all operations
     account for gas costs.
  *)
+
 module type S = sig
   type 'a t
 
@@ -115,27 +116,44 @@ module type S = sig
     ('state * context) tzresult
 end
 
-(** FILL ME. *)
+(** This module is used to provide gas consuming functions when 
+    constructing gas consuming maps. Functions for 
+    consuming maps in `Alpha_context` and `Raw_context`  have 
+    different signatures, 
+*)
 module type GAS_COSTS = sig
+  (* the type of keys on which the functions of this module operat on *)
   type t
 
+  (* the gas cost type *)
   type cost
 
+  (* the context type *)
   type context
 
   (** [compare_cost k] returns the cost of comparing the given key [k] with
       another value of the same type. *)
   val compare_cost : t -> cost
 
+  (** [find_cost k n] returns the cost of looking up a [k] in a map of size [n] *)
   val find_cost : compare_key_cost:cost -> size:int -> cost
 
+  (** [update_cost k n] returns the cost of updating key [k] in a map of size [n] *)
   val update_cost : compare_key_cost:cost -> size:int -> cost
 
+  (** [fold_cost] returns the cost of iterating through the keys of a map of size [n] *)
   val fold_cost : size:int -> cost
 
+  (** [consume_gas ctxt cost] returns a context where [cost] has been consumed *)
   val consume_gas : context -> cost -> context tzresult
 end
 
-(** A functor for building gas metered maps. *)
+(** A functor for building gas metered maps. 
+    When building a gas metered map via [Make(O)(G)], [O] 
+    is a [Compare.Comparable] required to construct a [Stdlib.Map], 
+    while [G] is a module providing the gas consuming functions.
+    The type of the context on which the gas consuming function operates
+    is determined by [G.context].
+*)
 module Make (O : Compare.COMPARABLE) (G : GAS_COSTS with type t = O.t) :
   S with type key := O.t and type cost := G.cost and type context := G.context

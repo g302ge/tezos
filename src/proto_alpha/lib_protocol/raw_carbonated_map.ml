@@ -1,7 +1,7 @@
 (*****************************************************************************)
 (*                                                                           *)
 (* Open Source License                                                       *)
-(* Copyright (c) 2021 Trili Tech, <contact@trili.tech>                       *)
+(* Copyright (c) 2022 Trili Tech, <contact@trili.tech>                       *)
 (*                                                                           *)
 (* Permission is hereby granted, free of charge, to any person obtaining a   *)
 (* copy of this software and associated documentation files (the "Software"),*)
@@ -83,8 +83,6 @@ module type GAS_COSTS = sig
 
   type context
 
-  (** [compare_cost k] returns the cost of comparing the given key [k] with
-      another value of the same type. *)
   val compare_cost : t -> cost
 
   val find_cost : compare_key_cost:cost -> size:int -> cost
