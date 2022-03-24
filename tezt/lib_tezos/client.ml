@@ -1534,17 +1534,24 @@ let init_with_node ?path ?admin_path ?name ?color ?base_dir ?event_level
     ?(keys = Constant.all_secret_keys) tag () =
   match tag with
   | (`Client | `Proxy) as mode ->
-      let* node = Node.init ?event_level ?event_sections_levels nodes_args in
+      let node = Node.create nodes_args in
+      let client =
+        (* Temporary mode to make the launch of the client and the
+           node in parallel. *)
+        create_with_mode ?path ?admin_path ?name ?color ?base_dir Mockup
+      in
+      let* () =
+        let* () = Node.config_init node [] in
+        let* () = Node.run node ?event_level ?event_sections_levels [] in
+        Node.wait_for_ready node
+      and* () = Lwt_list.iter_s (import_secret_key client) keys in
       let endpoint = Node node in
       let mode =
         match mode with
         | `Client -> Client (Some endpoint, None)
         | `Proxy -> Proxy endpoint
       in
-      let client =
-        create_with_mode ?path ?admin_path ?name ?color ?base_dir mode
-      in
-      let* () = Lwt_list.iter_s (import_secret_key client) keys in
+      client.mode <- mode ;
       return (node, client)
   | `Light ->
       let* (client, node1, _) =
