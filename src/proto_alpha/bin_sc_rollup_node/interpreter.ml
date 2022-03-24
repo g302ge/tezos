@@ -74,6 +74,8 @@ module Make
     let inbox_level = Inbox.inbox_level inbox in
 
     let rec feed state num_messages num_ticks =
+      (* TODO: [eval_until_input] returns the last input level and counter.
+         We need to figure out the next! *)
       let*! (state, (want_inbox_level, message_counter), more_ticks) =
         eval_until_input state
       in
